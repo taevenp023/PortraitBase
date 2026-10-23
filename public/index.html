@@ -1,0 +1,2298 @@
+<!DOCTYPE html>
+<!-- saved from url=(0235)file:///Users/yolanda/Library/Application%20Support/Claude/local-agent-mode-sessions/f5dc671d-22ee-44ea-b30b-60fd5b5a048e/cc7f1008-7a05-4f7c-95da-1aa4f975753c/local_6f9ff046-078e-448d-b5fd-13e0c67d5651/outputs/assignment_dashboard.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PORTRAIT Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyB-quZxDt2KEYakk0t6kPEvOB_8mnWCsSw",
+  authDomain: "capstone-2026-27-e46ff.firebaseapp.com",
+  projectId: "capstone-2026-27-e46ff",
+  storageBucket: "capstone-2026-27-e46ff.firebasestorage.app",
+  messagingSenderId: "870341533342",
+  appId: "1:870341533342:web:2ec6c085848cc30762e58f"
+});
+const db = firebase.firestore();
+const DOC_REF = db.collection('dashboards').doc('main');
+</script>
+<style>
+  :root {
+    --bg: #f5f4f0;
+    --surface: #ffffff;
+    --surface2: #f0efe9;
+    --border: #e2e0d8;
+    --border-strong: #cbc7ba;
+    --text: #1a1917;
+    --text2: #6b6860;
+    --text3: #9b9890;
+    --accent: #2d5be3;
+    --accent-bg: #eef2fc;
+    --green: #1a7f4b;
+    --green-bg: #e8f7ef;
+    --amber: #a05c00;
+    --amber-bg: #fef3e2;
+    --red: #c0392b;
+    --red-bg: #fdecea;
+    --radius: 10px;
+    --radius-sm: 6px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); font-size: 14px; line-height: 1.5; }
+
+  .app { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+  .sidebar { background: var(--surface); border-right: 1px solid var(--border); padding: 24px 0; display: flex; flex-direction: column; }
+  .main { padding: 28px 32px; overflow-x: hidden; }
+
+  .logo { padding: 0 20px 20px; border-bottom: 1px solid var(--border); margin-bottom: 16px; }
+  .logo-title { font-size: 15px; font-weight: 600; color: var(--text); }
+  .logo-sub { font-size: 12px; color: var(--text2); margin-top: 2px; }
+  .nav-item { display: flex; align-items: center; gap: 10px; padding: 9px 20px; cursor: pointer; font-size: 13px; color: var(--text2); border-left: 2px solid transparent; transition: all 0.15s; }
+  .nav-item:hover { background: var(--bg); color: var(--text); }
+  .nav-item.active { color: var(--accent); background: var(--accent-bg); border-left-color: var(--accent); font-weight: 500; }
+  .nav-section { font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text3); padding: 12px 20px 4px; }
+
+  .page-header { margin-bottom: 24px; }
+  .page-title { font-size: 22px; font-weight: 600; color: var(--text); }
+  .page-sub { font-size: 13px; color: var(--text2); margin-top: 4px; }
+
+  .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 24px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+  .stat-label { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text2); margin-bottom: 6px; }
+  .stat-val { font-size: 26px; font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; }
+  .stat-hint { font-size: 11px; color: var(--text3); margin-top: 3px; }
+
+  /* MATRIX */
+  .matrix-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .matrix-toolbar { display: flex; align-items: center; justify-content: space-between; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+  .toolbar-title { font-size: 14px; font-weight: 600; }
+  .toolbar-actions { display: flex; gap: 8px; align-items: center; }
+  .legend { display: flex; gap: 12px; align-items: center; font-size: 11px; color: var(--text2); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 4px; }
+  .table-scroll { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 12px; }
+
+  thead tr.team-row th { background: var(--surface2); padding: 8px 6px; text-align: center; font-weight: 600; font-size: 11px; color: var(--text); border-bottom: 1px solid var(--border); white-space: nowrap; }
+  thead tr.team-row th.th-part-spacer { background: var(--surface); border-right: 2px solid var(--text3); }
+  thead tr.team-row th.th-totals-spacer { background: var(--surface2); border-left: 2px solid var(--text3); }
+
+  thead tr.student-row th { background: var(--surface2); padding: 8px 4px; text-align: center; font-weight: 500; font-size: 11px; color: var(--text2); border-bottom: 2px solid var(--border); border-right: 1px solid var(--border-strong); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 78px; }
+  thead tr.student-row th.th-part { text-align: left; background: var(--surface); border-right: 2px solid var(--text3); font-size: 12px; color: var(--text2); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+  thead tr.student-row th.th-last-in-team { border-right: 2px solid var(--text3); }
+  thead tr.student-row th.th-totals { background: var(--surface2); border-left: 2px solid var(--text3); min-width: 70px; font-size: 11px; }
+
+  tbody tr:hover td { background: #faf9f6; }
+  td { border-bottom: 1px solid var(--border); border-right: 1px solid var(--border-strong); vertical-align: middle; }
+  td.last-in-team, tfoot td.last-in-team { border-right: 2px solid var(--text3); }
+  td.td-part { padding: 10px 12px; background: var(--surface); position: sticky; left: 0; z-index: 1; border-right: 2px solid var(--text3); }
+  .part-name { font-weight: 500; font-size: 13px; color: var(--text); margin-bottom: 5px; }
+  .part-meta { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+  .wt-badge { font-size: 10px; font-family: 'DM Mono', monospace; font-weight: 500; padding: 2px 6px; background: var(--surface2); border: 1px solid var(--border); border-radius: 4px; color: var(--text2); }
+  .slo-chip { font-size: 10px; padding: 2px 7px; border-radius: 20px; font-weight: 500; }
+  td.td-cell { padding: 8px 4px; text-align: center; cursor: pointer; transition: background 0.1s; border-right: 1px solid var(--border-strong); }
+  td.td-cell:hover { background: var(--accent-bg) !important; }
+  td.td-cell.claimed { background: #eef5ff; }
+  td.td-cell.required-lock { background: #edfaf3 !important; cursor: default; }
+  td.td-cell.required-lock:hover { background: #e0f5eb !important; }
+  td.td-cell.not-mine { cursor: default; opacity: 0.5; }
+  td.td-cell.not-mine:hover { background: transparent !important; }
+  .checkbox.required { background: var(--green); border-color: var(--green); color: #fff; }
+  td.td-cell.last-in-team { border-right: 2px solid var(--text3); }
+  .cell-box { display: flex; flex-direction: column; align-items: center; gap: 3px; }
+  .checkbox { width: 20px; height: 20px; border: 1.5px solid var(--border); border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 11px; transition: all 0.15s; color: transparent; }
+  .checkbox.checked { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .wt-input { width: 50px; font-size: 11px; font-family: 'DM Mono', monospace; padding: 2px 4px; border: 1px solid var(--border); border-radius: 4px; text-align: center; background: var(--surface); color: var(--text); outline: none; }
+  .wt-input:focus { border-color: var(--accent); }
+  td.td-total { padding: 8px 10px; text-align: center; background: var(--surface2); font-size: 12px; font-family: 'DM Mono', monospace; font-weight: 500; border-left: 2px solid var(--border); }
+  tfoot td { background: var(--surface2); padding: 10px 12px; font-size: 11px; font-weight: 600; border-top: 2px solid var(--border); text-align: center; font-family: 'DM Mono', monospace; }
+  tfoot td.tfoot-label { text-align: left; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text2); font-family: 'DM Sans', sans-serif; }
+  tfoot td.last-in-team { border-right: 2px solid var(--border); }
+
+  /* COVERAGE */
+  .coverage-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px; }
+  .slo-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; }
+  .slo-card-name { font-size: 13px; font-weight: 600; margin-bottom: 10px; }
+  .slo-bar-bg { height: 8px; background: var(--surface2); border-radius: 4px; overflow: hidden; margin-bottom: 8px; }
+  .slo-bar-fill { height: 8px; border-radius: 4px; transition: width 0.4s; }
+  .slo-card-stats { font-size: 11px; color: var(--text2); display: flex; justify-content: space-between; }
+
+  /* SETUP */
+  .setup-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .setup-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; }
+  .setup-card-title { font-size: 14px; font-weight: 600; margin-bottom: 14px; padding-bottom: 10px; border-bottom: 1px solid var(--border); }
+
+  .team-block { border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 10px; overflow: hidden; }
+  .team-block-header { display: flex; align-items: center; gap: 8px; padding: 9px 12px; background: var(--surface2); border-bottom: 1px solid var(--border); }
+  .team-block-name { font-size: 13px; font-weight: 600; flex: 1; }
+  .team-block-count { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; }
+  .student-list { padding: 6px 10px; }
+  .student-row-item { display: flex; align-items: center; gap: 6px; padding: 4px 6px; border-radius: 4px; font-size: 12px; }
+  .student-row-item:hover { background: var(--bg); }
+  .student-row-item span { flex: 1; }
+  .student-add-row { display: flex; gap: 6px; padding: 6px 10px; border-top: 1px solid var(--border); }
+
+  .list-row { display: flex; align-items: center; gap: 8px; padding: 7px 10px; border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 6px; font-size: 13px; background: var(--surface2); }
+  .list-row span { flex: 1; }
+  .remove-btn { background: none; border: none; cursor: pointer; color: var(--text3); font-size: 18px; line-height: 1; padding: 0; transition: color 0.1s; }
+  .remove-btn:hover { color: var(--red); }
+  .rename-btn { background: none; border: none; cursor: pointer; color: var(--text3); padding: 3px; display: flex; align-items: center; border-radius: 4px; opacity: 0.6; transition: opacity 0.1s, color 0.1s, background 0.1s; }
+  .rename-btn:hover { opacity: 1; color: var(--accent); background: var(--accent-bg); }
+  .form-group { margin-bottom: 10px; }
+  .form-label { font-size: 11px; font-weight: 600; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px; }
+  .form-input { width: 100%; padding: 8px 10px; font-size: 13px; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); font-family: 'DM Sans', sans-serif; outline: none; }
+  .form-input:focus { border-color: var(--accent); }
+  .slo-picker { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+  .slo-pick { font-size: 11px; padding: 4px 10px; border-radius: 20px; border: 1px solid var(--border); cursor: pointer; font-weight: 500; transition: all 0.15s; background: var(--surface2); color: var(--text2); }
+  .slo-pick.on { color: #fff; border-color: transparent; }
+
+  .btn { padding: 8px 14px; font-size: 12px; font-weight: 500; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); color: var(--text); cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+  .btn:hover { background: var(--surface2); }
+  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-primary:hover { background: #2451c8; }
+  .btn-sm { padding: 5px 10px; font-size: 11px; }
+  .btn-danger { border-color: var(--red-bg); background: var(--red-bg); color: var(--red); }
+  .btn-danger:hover { background: #fad7d4; }
+
+  .coverage-table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+  .coverage-table-wrap table th { background: var(--surface2); padding: 10px 14px; text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text2); border-bottom: 1px solid var(--border); }
+  .coverage-table-wrap table td { padding: 10px 14px; border-bottom: 1px solid var(--border); font-size: 13px; }
+  .coverage-table-wrap table tr:last-child td { border-bottom: none; }
+
+  /* ASSIGNMENT GROUP ROW */
+  tr.assignment-separator td { height: 10px; background: #1a2340; border: none; padding: 0; }
+  tr.assignment-group td { background: var(--surface2); padding: 9px 12px; font-weight: 600; font-size: 12px; border-bottom: 1px solid var(--border); border-top: 2px solid var(--border); cursor: pointer; user-select: none; }
+  tr.assignment-group td:first-child { position: sticky; left: 0; z-index: 2; border-right: 1px solid var(--border); }
+  tr.assignment-group:hover td { background: #e8e7e1; }
+  .assignment-group-inner { display: flex; align-items: center; gap: 8px; }
+  .collapse-icon { font-size: 10px; color: var(--text3); transition: transform 0.15s; display: inline-block; }
+  .collapse-icon.open { transform: rotate(90deg); }
+  .assignment-name { font-size: 13px; font-weight: 600; color: var(--text); }
+
+  /* SETUP - ASSIGNMENT BLOCK */
+  .assign-block { border: 1px solid var(--border); border-radius: var(--radius-sm); margin-bottom: 10px; overflow: hidden; }
+  .assign-block-header { display: flex; align-items: flex-start; gap: 8px; padding: 10px 12px; background: var(--surface2); border-bottom: 1px solid var(--border); }
+  .assign-block-info { flex: 1; min-width: 0; }
+  .assign-block-name { font-size: 13px; font-weight: 600; margin-bottom: 5px; }
+  .assign-slo-picker { display: flex; flex-wrap: wrap; gap: 4px; }
+  .assign-parts-list { padding: 6px 10px; }
+  .assign-part-row { display: flex; align-items: center; gap: 6px; padding: 4px 6px; border-radius: 4px; font-size: 12px; }
+  .assign-part-row:hover { background: var(--bg); }
+  .assign-part-row span { flex: 1; }
+  .assign-part-wt { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); }
+  .assign-part-add { display: flex; gap: 6px; padding: 6px 10px; border-top: 1px solid var(--border); }
+
+  /* DRAG AND DROP */
+  .drag-handle { color: var(--text3); cursor: grab; padding: 0 8px 0 4px; display: flex; align-items: center; flex-shrink: 0; opacity: 0.5; transition: opacity 0.1s; }
+  .drag-handle:hover { opacity: 1; }
+  .drag-handle:active { cursor: grabbing; }
+  .assign-block[draggable] { transition: opacity 0.15s; }
+  .assign-block.drag-over { outline: 2px dashed var(--accent); outline-offset: -2px; background: var(--accent-bg); }
+  .assign-part-row.drag-over { background: var(--accent-bg) !important; border-radius: 4px; }
+
+  /* COVERAGE - per-assignment table */
+  .assign-coverage-cell { display: flex; flex-direction: column; gap: 4px; min-width: 80px; }
+  .assign-coverage-wt { font-family: 'DM Mono', monospace; font-size: 12px; font-weight: 600; color: var(--accent); }
+  .assign-slos-inline { display: flex; flex-wrap: wrap; gap: 3px; }
+
+  .tag-none { font-size: 11px; color: var(--text3); }
+  .empty { text-align: center; padding: 40px; color: var(--text2); font-size: 13px; }
+  .section-title { font-size: 14px; font-weight: 600; margin-bottom: 12px; }
+
+  /* AUTH BADGE */
+  .user-badge { display:flex;align-items:center;gap:8px;padding:8px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:12px;font-weight:500;color:var(--text); }
+  .user-badge.instructor { background:var(--accent-bg);border-color:#c5d4f7;color:var(--accent); }
+  .user-badge.student { background:var(--green-bg);border-color:#b6e8d0;color:var(--green); }
+
+  /* LOGIN PATH BUTTONS */
+  .login-path-row { display:flex;gap:12px;margin-bottom:20px; }
+  .login-path-btn { flex:1;display:flex;flex-direction:column;align-items:center;gap:10px;padding:22px 12px;border:1.5px solid var(--border);border-radius:10px;background:var(--surface2);cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.18s; }
+  .login-path-btn:hover { border-color:var(--accent);background:var(--accent-bg); }
+  .login-path-btn.active { border-color:var(--accent);background:var(--accent-bg); }
+  .login-path-label { font-size:13px;font-weight:600;color:var(--text); }
+  .login-path-sub { font-size:11px;color:var(--text2);text-align:center;line-height:1.4; }
+
+  /* LOGIN OVERLAY / CARD */
+  .login-overlay { display:flex; align-items:center; justify-content:center; min-height:calc(100vh - 56px); padding:24px; }
+  .login-card { background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); padding:28px; box-shadow:0 8px 28px rgba(20,18,10,0.07); }
+
+  /* TEAM / STUDENT PICKER BUTTONS */
+  .login-team-btn { display:flex; align-items:center; gap:12px; width:100%; padding:12px 14px; margin-bottom:10px; border:1.5px solid var(--border); border-radius:var(--radius-sm); background:var(--surface); cursor:pointer; font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; color:var(--text); text-align:left; transition:all 0.15s; }
+  .login-team-btn:last-child { margin-bottom:0; }
+  .login-team-btn:hover { border-color:var(--accent); background:var(--accent-bg); transform:translateY(-1px); }
+  .login-team-btn:active { transform:translateY(0); }
+  .login-team-btn.active { border-color:var(--accent); background:var(--accent-bg); box-shadow:0 0 0 1px var(--accent); }
+
+  .avatar { width:34px; height:34px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; color:#fff; flex-shrink:0; letter-spacing:0.02em; }
+  .avatar.avatar-sm { width:28px; height:28px; font-size:11px; }
+
+  .login-pw-row { display:flex; gap:8px; align-items:center; margin-top:2px; }
+  .login-pw-row .form-input { flex:1; }
+  .login-error { font-size:12px; color:var(--red); margin-top:6px; min-height:16px; }
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="sidebar">
+    <div class="logo">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:4px">
+        <svg width="36" height="36" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <rect width="48" height="48" rx="12" fill="#b45309"/>
+          <path d="M24 11l3.5 7 7.5 1-5.5 5.5 1.5 7.5L24 29l-7 4 1.5-7.5L13 20l7.5-1z" stroke="white" stroke-width="1.8" stroke-linejoin="round" fill="white" fill-opacity="0.2"/>
+          <path d="M20 34h8M22 37h4" stroke="white" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        <div>
+          <div class="logo-title" style="font-size:13px;line-height:1.2">PORTRAIT</div>
+          <div style="font-size:10px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#b45309;margin-top:1px">Dashboard · v4</div>
+        </div>
+      </div>
+    </div>
+    <div class="nav-section">Views</div>
+    <div class="nav-item" onclick="setNav(&#39;matrix&#39;, this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>
+      Selection Matrix
+    </div>
+    <div class="nav-item" onclick="setNav(&#39;summary&#39;, this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+      Individual Contributions
+    </div>
+    <div class="nav-item" onclick="setNav(&#39;coverage&#39;, this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>
+      SLO Coverage
+    </div>
+    <div class="nav-item" onclick="setNav(&#39;assessments&#39;, this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      Peer Assessment
+    </div>
+    <div id="nav-admin-label" class="nav-section" style="display:none">Admin</div>
+    <div id="nav-setup" class="nav-item" style="display:none" onclick="setNav(&#39;setup&#39;, this)">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19.07 4.93a10 10 0 0 1 0 14.14"></path><path d="M4.93 4.93a10 10 0 0 0 0 14.14"></path></svg>
+      Setup
+    </div>
+    <div style="flex:1"></div>
+    <div id="auth-badge" class="user-badge" style="display:none;margin:0 12px 8px"></div>
+    <div style="padding: 0 20px 16px; font-size: 11px; color: var(--text3);">
+      <div id="sidebar-stats" style="margin-bottom:10px">
+    <div style="margin-bottom:4px">3 teams &nbsp;·&nbsp; 9 students</div>
+    <div>2 assignments &nbsp;·&nbsp; 7 parts</div>
+  </div>
+      <div style="display:flex;flex-direction:column;gap:5px">
+        <button class="btn btn-sm" style="width:100%;font-size:11px;text-align:left;display:flex;align-items:center;gap:6px" onclick="exportData()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Export data
+        </button>
+        <label class="btn btn-sm" style="width:100%;font-size:11px;text-align:left;display:flex;align-items:center;gap:6px;cursor:pointer;margin:0">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="17 8 12 3 7 8"></polyline><line x1="12" y1="3" x2="12" y2="15"></line></svg>
+          Import data
+          <input type="file" accept=".json" style="display:none" onchange="importData(event)">
+        </label>
+        <div id="save-indicator" style="font-size:10px;color:var(--text3);text-align:center;min-height:14px"></div>
+        <button id="btn-logout" class="btn btn-sm" style="display:none;width:100%;font-size:11px;text-align:left;gap:6px" onclick="logout()">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+          Log out
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="main" id="main-content">
+    <div class="login-overlay"><div style="font-size:12px;color:var(--text3)">Loading…</div></div>
+  </div>
+</div>
+
+<script>
+const SLO_COLORS = ['#2d5be3','#1a7f4b','#a05c00','#7b3fbd','#c0392b','#0e7490','#6d5a00','#8b4a62'];
+const SLO_BKGS   = ['#eef2fc','#e8f7ef','#fef3e2','#f3eeff','#fdecea','#e0f7fd','#fefce0','#fceef4'];
+const SLO_DESCRIPTIONS = [
+  'Analyze a complex computing problem and apply principles of computing and other relevant disciplines to identify solutions.',
+  'Design computing-based solutions to meet a given set of computing requirements.',
+  'Implement computing-based solutions to meet a given set of computing requirements.',
+  'Communicate effectively in a variety of professional contexts.',
+  'Recognize professional responsibilities and make informed judgments in computing practice based on legal and ethical principles.',
+  'Function effectively as a member or leader of a team engaged in activities appropriate to the program\'s discipline.',
+  'Apply computer science theory and software development fundamentals to produce computing-based solutions.',
+  'Acquire and apply new knowledge as needed, using appropriate learning strategies.',
+];
+let expandedSloIdx = new Set(); // keys are "<context>:<si>" so expand state doesn't bleed between pickers
+window.toggleSloExpand = (context, si) => {
+  const key = context + ':' + si;
+  expandedSloIdx.has(key) ? expandedSloIdx.delete(key) : expandedSloIdx.add(key);
+  syncEditingPartFields();
+  renderMain();
+};
+let uidCounter = 100;
+function uid(){ return 'u' + (++uidCounter); }
+
+let _saveTimer;
+// True while this browser has a local change queued that hasn't reached Firestore
+// yet (see saveState below). The realtime listener checks this before merging an
+// incoming snapshot — otherwise a *different*, already-confirmed write (e.g. the
+// selections cleanup that fires immediately when deleting an assignment) could
+// echo back a snapshot that predates this change and silently overwrite it before
+// the debounce timer below gets a chance to send it.
+let _saveDirty = false;
+function saveState(){
+  _saveDirty = true;
+  clearTimeout(_saveTimer);
+  _saveTimer = setTimeout(() => {
+    // `selections` is written separately, per-key (see saveSelectionField/saveSelections),
+    // so a browser tab that's been open a while — and hasn't seen other students' picks yet —
+    // can never overwrite the whole selections map with its own stale copy.
+    const { selections, ...rest } = state;
+    DOC_REF.set(rest, {merge: true}).then(() => {
+      _saveDirty = false;
+      const ind = document.getElementById('save-indicator');
+      if(ind){ ind.textContent = '✓ Saved'; setTimeout(() => { ind.textContent = ''; }, 1500); }
+      updateSidebarStats();
+    }).catch(e => { _saveDirty = false; console.warn('Firestore save failed:', e); });
+  }, 600);
+}
+
+// Atomic write of exactly one selection — safe even if this browser's local
+// `state` is stale, since it only ever touches this one key on the server.
+function saveSelectionField(pid, sid, value){
+  DOC_REF.update(new firebase.firestore.FieldPath('selections', selKey(pid, sid)), value)
+    .catch(e => console.warn('Firestore selection save failed:', e));
+}
+
+// Full replace of the selections map — only for rare bulk admin actions
+// (clear all, delete a student/team/assignment/part), not per-click student use.
+function saveSelections(){
+  DOC_REF.update({selections: state.selections}).catch(e => console.warn('Firestore selections save failed:', e));
+}
+
+async function loadState(){
+  try {
+    const doc = await DOC_REF.get();
+    const saved = doc.exists ? JSON.stringify(doc.data()) : null;
+    if(saved){
+      const parsed = JSON.parse(saved);
+      // migrate old format (flat parts with slos) → new assignments format
+      if(parsed.parts && !parsed.assignments){
+        parsed.assignments = [{
+          id: uid(), name: 'Assignment 1',
+          slos: [...new Set(parsed.parts.flatMap(p => p.slos||[]))],
+          collapsed: false,
+          parts: parsed.parts.map(p => ({id:p.id, name:p.name, weight:p.weight}))
+        }];
+        delete parsed.parts;
+      }
+      // Migrate old SLOs to new ones if still on the original set
+      const OLD_SLOS = ['SLO 1: Critical Thinking','SLO 2: Communication','SLO 3: Research Methods','SLO 4: Data Analysis','SLO 5: Synthesis'];
+      if(parsed.slos && parsed.slos[0] === OLD_SLOS[0]){
+        parsed.slos = state.slos; // replace with new defaults
+        if(parsed.assignments) parsed.assignments.forEach(a => { a.slos = []; }); // clear stale indices
+      }
+      Object.assign(state, parsed);
+      // migrate teams/students missing IDs
+      let needsSave = false;
+      state.teams.forEach(t => {
+        if(!t.id){ t.id = uid(); needsSave = true; }
+        if(!t.students) t.students = [];
+        t.students.forEach(s => { if(!s.id){ s.id = uid(); needsSave = true; } });
+      });
+      // migrate assignment-level SLOs → per-part SLOs (SLOs are now assigned per section)
+      state.assignments.forEach(a => {
+        a.parts.forEach(p => {
+          if(!p.slos){
+            p.slos = (a.slos && a.slos.length) ? [...a.slos] : [];
+            needsSave = true;
+          }
+        });
+      });
+      if(needsSave) DOC_REF.set(state);
+      // recalc uidCounter to avoid ID collisions
+      const allIds = [
+        ...state.teams.flatMap(t => [t.id, ...t.students.map(s => s.id)]),
+        ...state.assignments.flatMap(a => [a.id, ...a.parts.map(p => p.id)])
+      ];
+      allIds.forEach(id => {
+        const n = parseInt(id.replace(/\D/g,''));
+        if(!isNaN(n) && n > uidCounter) uidCounter = n;
+      });
+      // Clear any stale pairings that have unpaired entries — force re-generation
+      if(state.assessmentPairings){
+        Object.keys(state.assessmentPairings).forEach(k => {
+          if(state.assessmentPairings[k].some(p => p.unpaired)) delete state.assessmentPairings[k];
+        });
+      }
+    }
+  } catch(e) { console.warn('Firestore load failed:', e); }
+}
+
+// Keeps this browser's local `state` in sync with what everyone else has saved,
+// instead of only ever reading it once at page load. Without this, a tab left
+// open for a while has no way to learn about other students' picks before its
+// own next save — which is what let one save silently blow away another's.
+function startRealtimeSync(){
+  DOC_REF.onSnapshot({includeMetadataChanges: true}, snapshot => {
+    if(snapshot.metadata.hasPendingWrites) return; // our own write echoing back — nothing new
+    if(!snapshot.exists) return;
+    // We have a local change queued that hasn't been written yet (see saveState) —
+    // applying this snapshot now would overwrite it with a server state that
+    // predates that change. Skip it; our own pending save will supersede this
+    // snapshot within ~1s anyway.
+    if(_saveDirty) return;
+    // `view` is which page THIS browser has open, not shared data — never let a
+    // remote update yank another user to whatever tab someone else navigated to.
+    const { view, ...remote } = snapshot.data();
+    Object.assign(state, remote);
+    const active = document.activeElement;
+    const isTyping = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
+    if(currentUser && !isTyping) renderMain({skipSave: true});
+  }, e => console.warn('Firestore realtime sync failed:', e));
+}
+
+window.exportData = () => {
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type: 'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'portrait-data.json';
+  a.click();
+};
+
+window.importData = (event) => {
+  const file = event.target.files[0];
+  if(!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      const parsed = JSON.parse(e.target.result);
+      if(parsed.teams && (parsed.assignments || parsed.parts) && parsed.slos){
+        Object.assign(state, parsed);
+        saveState();
+        renderMain();
+      } else { alert('Invalid data file.'); }
+    } catch(err) { alert('Could not read file.'); }
+    event.target.value = '';
+  };
+  reader.readAsText(file);
+};
+
+let state = {
+  view: 'matrix',
+  teams: [
+    { id:'t1', name:'Team A', students:[
+      {id:'s1', name:'Alice'}, {id:'s2', name:'Bob'}, {id:'s3', name:'Charlie'}, {id:'s4', name:'Diana'}
+    ]},
+    { id:'t2', name:'Team B', students:[
+      {id:'s5', name:'Ethan'}, {id:'s6', name:'Fiona'}, {id:'s7', name:'George'}
+    ]},
+    { id:'t3', name:'Team C', students:[
+      {id:'s8', name:'Hannah'}, {id:'s9', name:'Ivan'}, {id:'s10', name:'Jade'}
+    ]},
+  ],
+  slos: [
+    'SLO 1: Solution Identification',
+    'SLO 2a: Solution Design',
+    'SLO 2b: Solution Implementation',
+    'SLO 3: Communication',
+    'SLO 4: Ethical Decision Making',
+    'SLO 5: Teamwork',
+    'SLO 6: Experimentation & Evaluation',
+    'SLO 7: Information Literacy',
+  ],
+  assignments: [
+    {
+      id:'a1', name:'Research Paper', collapsed:false,
+      parts:[
+        {id:'p1', name:'Introduction & Background', weight:5,  slos:[0,1]},
+        {id:'p2', name:'Literature Review',          weight:10, slos:[0,7]},
+        {id:'p3', name:'Research Methodology',       weight:15, slos:[1,6]},
+        {id:'p4', name:'Data Collection',            weight:10, slos:[6]},
+        {id:'p5', name:'Analysis & Results',         weight:20, slos:[1,6]},
+        {id:'p6', name:'Discussion',                 weight:15, slos:[2,3]},
+        {id:'p7', name:'Conclusions',                weight:10, slos:[2]},
+        {id:'p8', name:'References',                 weight:5,  slos:[7]},
+      ]
+    },
+    {
+      id:'a2', name:'Group Presentation', collapsed:false,
+      parts:[
+        {id:'p9',  name:'Slides & Visual Design', weight:25, slos:[3]},
+        {id:'p10', name:'Delivery & Narration',   weight:35, slos:[3,5]},
+        {id:'p11', name:'Q&A Responses',           weight:20, slos:[2,3]},
+        {id:'p12', name:'Executive Summary',       weight:20, slos:[4,5]},
+      ]
+    },
+  ],
+  selections: {},
+  assessmentPairings: {},
+  teamPasswords: {},
+  masterPassword: null,
+};
+
+// UI state — not persisted
+let matrixCollapsedTeams = new Set();
+let setupTeamsExpanded = false;
+let setupSlosExpanded = true;
+let setupAssignmentsExpanded = true;
+let setupExpandedAssignments = new Set();
+let renamingAssignId = null;
+let renamingTeamId = null;
+let editingPartId = null;
+let newPartSlos = {}; // aid -> [si,...] picked before the section exists yet
+let newPartDrafts = {}; // aid -> {name,weight,isAssessment,requiredAll} — survives unrelated re-renders
+const DEV_MODE = false;
+let currentUser = DEV_MODE ? {type:"instructor"} : null;
+let collapsedAssessmentParts = new Set(); // null=login required | {type:'instructor'} | {type:'team',teamId,teamName}
+let summaryCollapsedAssignments = new Set();
+
+/* ─── HELPERS ─── */
+function allStudents(){
+  return state.teams.flatMap(t => t.students.map(s => ({...s, teamId: t.id, teamName: t.name})));
+}
+function allParts(){
+  return state.assignments.flatMap(a => a.parts.map(p => ({...p, assignId: a.id})));
+}
+function findPart(pid){
+  for(const a of state.assignments){
+    const p = a.parts.find(p => p.id === pid);
+    if(p) return p;
+  }
+  return null;
+}
+function selKey(pid, sid){ return pid + '_' + sid; }
+
+/* ─── FILE SYSTEM HANDLE (student auto-save) ─── */
+async function dbOpen(){
+  return new Promise((res,rej) => {
+    const r = indexedDB.open('capstone-fsh',1);
+    r.onupgradeneeded = e => e.target.result.createObjectStore('fsh');
+    r.onsuccess = e => res(e.target.result);
+    r.onerror = () => rej(r.error);
+  });
+}
+async function dbGet(key){
+  const db = await dbOpen();
+  return new Promise((res,rej) => {
+    const r = db.transaction('fsh','readonly').objectStore('fsh').get(key);
+    r.onsuccess = () => res(r.result ?? null);
+    r.onerror = () => rej(r.error);
+  });
+}
+async function dbPut(key,val){
+  const db = await dbOpen();
+  return new Promise((res,rej) => {
+    const tx = db.transaction('fsh','readwrite');
+    tx.objectStore('fsh').put(val,key);
+    tx.oncomplete = res;
+    tx.onerror = () => rej(tx.error);
+  });
+}
+
+function _downloadJSON(data, teamName){
+  const blob = new Blob([data],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'portrait-'+(teamName||'student').toLowerCase().replace(/\s+/g,'-')+'-data.json';
+  a.click();
+}
+
+window.saveStudentToFile = async () => {
+  saveState();
+  const data = JSON.stringify(state,null,2);
+  const teamName = currentUser?.teamName || 'student';
+  const showMsg = (txt) => {
+    const el = document.getElementById('student-save-msg');
+    if(el){ el.textContent = txt; setTimeout(()=>{ el.textContent=''; },3000); }
+  };
+  if(window.showSaveFilePicker){
+    try {
+      let handle = await dbGet('studentFileHandle');
+      if(handle){
+        // Reuse the existing file
+        const perm = await handle.queryPermission({mode:'readwrite'});
+        if(perm !== 'granted') handle = null;
+      }
+      if(!handle){
+        handle = await window.showSaveFilePicker({
+          suggestedName: 'portrait-'+teamName.toLowerCase().replace(/\s+/g,'-')+'-data.json',
+          types:[{description:'JSON Data',accept:{'application/json':['.json']}}]
+        });
+        await dbPut('studentFileHandle', handle);
+      }
+      const w = await handle.createWritable();
+      await w.write(data);
+      await w.close();
+      showMsg('✓ Saved to file');
+      return;
+    } catch(e){ if(e.name==='AbortError') return; }
+  }
+  _downloadJSON(data, teamName);
+  showMsg('✓ Downloaded');
+};
+
+window._pendingStudentHandle = null;
+
+async function tryAutoLoadStudentData(){
+  if(!window.showSaveFilePicker) return false;
+  try {
+    const handle = await dbGet('studentFileHandle');
+    if(!handle) return false;
+    const perm = await handle.queryPermission({mode:'read'});
+    if(perm === 'prompt'){
+      window._pendingStudentHandle = handle; // show manual-load button
+      return false;
+    }
+    if(perm !== 'granted') return false;
+    const file = await handle.getFile();
+    const parsed = JSON.parse(await file.text());
+    if(parsed.teams && parsed.assignments){ Object.assign(state,parsed); saveState(); return true; }
+  } catch(e){}
+  return false;
+}
+
+window.loadStudentFileManually = async () => {
+  try {
+    let handle = window._pendingStudentHandle;
+    if(!handle){
+      const [picked] = await window.showOpenFilePicker({
+        types:[{description:'JSON Data',accept:{'application/json':['.json']}}]
+      });
+      handle = picked;
+    }
+    const perm = await handle.requestPermission({mode:'readwrite'});
+    if(perm !== 'granted') return;
+    await dbPut('studentFileHandle', handle);
+    const file = await handle.getFile();
+    const parsed = JSON.parse(await file.text());
+    if(parsed.teams && parsed.assignments){ Object.assign(state,parsed); saveState(); renderMain(); }
+  } catch(e){ if(e.name !== 'AbortError') console.warn('load error',e); }
+};
+
+/* ─── AUTH ─── */
+async function sha256(str){
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode('portrait-v1:' + str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+}
+
+function updateSidebarAuth(){
+  const badge = document.getElementById('auth-badge');
+  const setupNav = document.getElementById('nav-setup');
+  const logoutBtn = document.getElementById('btn-logout');
+  if(!badge) return;
+  if(!currentUser){
+    badge.style.display = 'none';
+    if(logoutBtn) logoutBtn.style.display = 'none';
+    if(setupNav) setupNav.style.display = 'none';
+    return;
+  }
+  if(currentUser){
+    badge.style.display = 'flex';
+    if(currentUser.type === 'instructor'){
+      badge.className = 'user-badge instructor';
+      badge.innerHTML = '<span class="avatar avatar-sm" style="background:var(--accent)">🔑</span><span>Instructor</span>';
+    } else {
+      badge.className = 'user-badge student';
+      const name = currentUser.studentName || currentUser.teamName;
+      badge.innerHTML = `<span class="avatar avatar-sm" style="background:${avatarColorFor(name)}">${initialsFor(name)}</span>`
+        + `<span>${currentUser.studentName ? currentUser.studentName + ' — ' + currentUser.teamName : currentUser.teamName}</span>`;
+    }
+    if(logoutBtn) logoutBtn.style.display = 'flex';
+    if(setupNav) setupNav.style.display = currentUser.type === 'instructor' ? '' : 'none';
+    const adminLabel = document.getElementById('nav-admin-label');
+    if(adminLabel) adminLabel.style.display = currentUser.type === 'instructor' ? '' : 'none';
+  } else {
+    badge.style.display = 'none';
+    if(logoutBtn) logoutBtn.style.display = 'none';
+    if(setupNav) setupNav.style.display = 'none'; // hide Setup until authenticated
+    const adminLabel2 = document.getElementById('nav-admin-label');
+    if(adminLabel2) adminLabel2.style.display = 'none';
+  }
+}
+
+const AVATAR_COLORS = ['#2d5be3','#1a7f4b','#b45309','#a05c00','#7c3aed','#c0392b','#0f766e','#be185d'];
+function avatarColorFor(name){
+  let hash = 0;
+  for(let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) >>> 0;
+  return AVATAR_COLORS[hash % AVATAR_COLORS.length];
+}
+function initialsFor(name){
+  const parts = name.trim().split(/\s+/).filter(Boolean);
+  if(!parts.length) return '?';
+  return (parts[0][0] + (parts.length > 1 ? parts[parts.length - 1][0] : '')).toUpperCase();
+}
+
+function buildLogin(){
+  const teams = state.teams;
+  const teamButtons = teams.map(t => {
+    const hasPw = !!state.teamPasswords[t.id];
+    return `<button class="login-team-btn" data-team-id="${t.id}" onclick="loginTeamStart('${t.id}','${t.name.replace(/'/g,"\'")}')">
+      <span class="avatar" style="background:${avatarColorFor(t.name)}">${initialsFor(t.name)}</span>
+      <span style="flex:1;text-align:left">${t.name}</span>
+      <span style="font-size:11px;color:var(--text3)">${t.students.length} members</span>
+      ${hasPw ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.4;flex-shrink:0"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>' : ''}
+    </button>`;
+  }).join('');
+
+  return `<div class="login-overlay">
+    <div class="login-card" style="width:420px">
+      <div style="display:flex;align-items:center;gap:12px;margin-bottom:6px">
+        <svg width="44" height="44" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg"><rect width="48" height="48" rx="12" fill="#b45309"/><path d="M24 11l3.5 7 7.5 1-5.5 5.5 1.5 7.5L24 29l-7 4 1.5-7.5L13 20l7.5-1z" stroke="white" stroke-width="1.8" stroke-linejoin="round" fill="white" fill-opacity="0.2"/><path d="M20 34h8M22 37h4" stroke="white" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <div>
+          <div style="font-size:17px;font-weight:700;color:var(--text)">PORTRAIT</div>
+          <div style="font-size:11px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#b45309">Dashboard</div>
+        </div>
+      </div>
+      <div id="login-screen-main">
+        <div class="login-path-row" style="margin-top:20px">
+          <button class="login-path-btn" onclick="showStudentLogin()">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            <span class="login-path-label">Student</span>
+            <span class="login-path-sub">Select your team and sign in</span>
+          </button>
+          <button class="login-path-btn" onclick="showInstructorLogin()">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <span class="login-path-label">Instructor</span>
+            <span class="login-path-sub">Full access with master password</span>
+          </button>
+        </div>
+      </div>
+      <div id="login-screen-student" style="display:none;margin-top:16px">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+          <button onclick="showMainLogin()" style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--text2);font-family:'DM Sans',sans-serif;padding:0;display:flex;align-items:center;gap:4px">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back
+          </button>
+          ${(window._pendingStudentHandle || window.showSaveFilePicker) ? `<button onclick="loadStudentFileManually()" style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--accent);font-family:'DM Sans',sans-serif;padding:0;display:flex;align-items:center;gap:4px;font-weight:500">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            ${window._pendingStudentHandle ? 'Load my saved data' : 'Load from file'}
+          </button>` : ''}
+        </div>
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);margin-bottom:8px">Select your team</div>
+        ${teamButtons}
+        <div id="login-pw-section" style="display:none;margin-top:4px">
+          <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px" id="login-pw-label"></div>
+          <div class="login-pw-row">
+            <input class="form-input" type="password" id="login-pw-inp" placeholder="Enter team password" onkeydown="if(event.key==='Enter')loginSubmit()">
+            <button class="btn btn-primary btn-sm" onclick="loginSubmit()">Sign in</button>
+            <button class="btn btn-sm" onclick="loginCancel()">Cancel</button>
+          </div>
+          <div class="login-error" id="login-error"></div>
+        </div>
+      </div>
+      <div id="login-screen-pick-student" style="display:none;margin-top:16px">
+        <button onclick="showStudentLogin()" style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--text2);font-family:'DM Sans',sans-serif;padding:0;margin-bottom:14px;display:flex;align-items:center;gap:4px">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back
+        </button>
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);margin-bottom:4px">Which of you is this?</div>
+        <div style="font-size:12px;color:var(--text3);margin-bottom:10px">You'll only be able to check your own boxes on <span id="pick-student-team-name" style="font-weight:600;color:var(--text2)"></span>'s matrix.</div>
+        <div id="pick-student-list"></div>
+      </div>
+      <div id="login-screen-instructor" style="display:none;margin-top:16px">
+        <button onclick="showMainLogin()" style="background:none;border:none;cursor:pointer;font-size:12px;color:var(--text2);font-family:'DM Sans',sans-serif;padding:0;margin-bottom:14px;display:flex;align-items:center;gap:4px">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"/></svg> Back
+        </button>
+        ${state.masterPassword
+          ? `<div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);margin-bottom:8px">Instructor password</div>
+             <div class="login-pw-row">
+               <input class="form-input" type="password" id="login-instructor-inp" placeholder="Enter instructor password" onkeydown="if(event.key==='Enter')loginInstructorSubmit()">
+               <button class="btn btn-primary btn-sm" onclick="loginInstructorSubmit()">Sign in</button>
+             </div>
+             <div class="login-error" id="login-error-instructor"></div>`
+          : `<div style="font-size:13px;color:var(--text2);margin-bottom:16px">No password has been set yet. You'll be taken to Setup to configure access.</div>
+             <button class="btn btn-primary" onclick="loginInstructorSubmit()" style="width:100%">Continue as Instructor</button>`
+        }
+      </div>
+    </div>
+  </div>`;
+}
+
+window.showMainLogin = () => {
+  document.getElementById('login-screen-main').style.display = '';
+  document.getElementById('login-screen-student').style.display = 'none';
+  document.getElementById('login-screen-instructor').style.display = 'none';
+};
+window.showStudentLogin = () => {
+  document.getElementById('login-screen-main').style.display = 'none';
+  document.getElementById('login-screen-student').style.display = '';
+  document.getElementById('login-screen-instructor').style.display = 'none';
+};
+window.showInstructorLogin = () => {
+  document.getElementById('login-screen-main').style.display = 'none';
+  document.getElementById('login-screen-student').style.display = 'none';
+  document.getElementById('login-screen-instructor').style.display = '';
+  setTimeout(() => { const i = document.getElementById('login-instructor-inp'); if(i) i.focus(); }, 50);
+};
+window.loginInstructorSubmit = async () => {
+  if(!state.masterPassword){
+    // No master password set — log instructor in directly
+    currentUser = {type:'instructor'};
+    state.view = 'setup';
+    renderMain();
+    return;
+  }
+  const inp = document.getElementById('login-instructor-inp');
+  const pw = inp ? inp.value : '';
+  if(!pw){ document.getElementById('login-error-instructor').textContent = 'Enter a password.'; return; }
+  const hash = await sha256(pw);
+  if(hash === state.masterPassword){
+    currentUser = {type:'instructor'};
+    state.view = 'matrix';
+    renderMain();
+  } else {
+    document.getElementById('login-error-instructor').textContent = 'Incorrect password.';
+    inp.value = '';
+    inp.focus();
+  }
+};
+let _loginTarget = null; // {type:'team',teamId,teamName} or {type:'instructor'}
+let _pickStudentTeam = null; // {teamId,teamName} — set while choosing which student you are
+
+window.loginTeamStart = (teamId, teamName) => {
+  document.querySelectorAll('#login-screen-student .login-team-btn').forEach(b => b.classList.remove('active'));
+  const hasPw = !!state.teamPasswords[teamId];
+  if(!hasPw){
+    // No password set — go straight to picking which student you are
+    showStudentPick(teamId, teamName);
+    return;
+  }
+  const btn = document.querySelector(`#login-screen-student .login-team-btn[data-team-id="${teamId}"]`);
+  if(btn) btn.classList.add('active');
+  _loginTarget = {type:'team', teamId, teamName};
+  document.getElementById('login-pw-section').style.display = '';
+  document.getElementById('login-pw-label').textContent = teamName + ' password';
+  document.getElementById('login-pw-inp').focus();
+  document.getElementById('login-error').textContent = '';
+};
+
+// loginInstructorStart replaced by showInstructorLogin + loginInstructorSubmit
+
+window.showStudentPick = (teamId, teamName) => {
+  _pickStudentTeam = {teamId, teamName};
+  document.getElementById('login-screen-main').style.display = 'none';
+  document.getElementById('login-screen-student').style.display = 'none';
+  document.getElementById('login-screen-instructor').style.display = 'none';
+  document.getElementById('login-screen-pick-student').style.display = '';
+  document.getElementById('pick-student-team-name').textContent = teamName;
+  const team = state.teams.find(t => t.id === teamId);
+  const list = document.getElementById('pick-student-list');
+  list.innerHTML = (team && team.students.length)
+    ? team.students.map(s =>
+        `<button class="login-team-btn" onclick="finishStudentLogin('${s.id}','${s.name.replace(/'/g,"\\'")}')">
+          <span class="avatar" style="background:${avatarColorFor(s.name)}">${initialsFor(s.name)}</span>
+          <span style="flex:1;text-align:left;font-size:14px">${s.name}</span>
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity:0.35;flex-shrink:0"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>`
+      ).join('')
+    : '<div style="font-size:12px;color:var(--text3)">No students on this team yet — ask your instructor to add you in Setup.</div>';
+};
+window.finishStudentLogin = (studentId, studentName) => {
+  const {teamId, teamName} = _pickStudentTeam;
+  currentUser = {type:'team', teamId, teamName, studentId, studentName};
+  state.view = 'matrix';
+  renderMain();
+};
+
+window.loginSubmit = async () => {
+  const pw = document.getElementById('login-pw-inp').value;
+  if(!pw){ document.getElementById('login-error').textContent = 'Enter a password.'; return; }
+  const hash = await sha256(pw);
+  if(_loginTarget.type === 'instructor'){
+    if(hash === state.masterPassword){
+      currentUser = {type:'instructor'};
+      state.view = 'matrix';
+      renderMain();
+    } else {
+      document.getElementById('login-error').textContent = 'Incorrect password.';
+      document.getElementById('login-pw-inp').value = '';
+      document.getElementById('login-pw-inp').focus();
+    }
+  } else {
+    const {teamId, teamName} = _loginTarget;
+    if(hash === state.teamPasswords[teamId]){
+      showStudentPick(teamId, teamName);
+    } else {
+      document.getElementById('login-error').textContent = 'Incorrect password.';
+      document.getElementById('login-pw-inp').value = '';
+      document.getElementById('login-pw-inp').focus();
+    }
+  }
+};
+
+window.loginCancel = () => {
+  _loginTarget = null;
+  const sec = document.getElementById('login-pw-section');
+  if(sec) sec.style.display = 'none';
+  document.querySelectorAll('#login-screen-student .login-team-btn').forEach(b => b.classList.remove('active'));
+};
+
+window.logout = () => {
+  currentUser = null;
+  renderMain();
+};
+
+window.studentSaveSelections = () => { window.saveStudentToFile(); };
+
+window.setTeamPassword = async (teamId) => {
+  const inp = document.getElementById('pw-team-inp-' + teamId);
+  if(!inp || !inp.value.trim()){ alert('Enter a password.'); return; }
+  state.teamPasswords[teamId] = await sha256(inp.value.trim());
+  inp.value = '';
+  saveState();
+  renderMain();
+};
+
+window.removeTeamPassword = (teamId) => {
+  delete state.teamPasswords[teamId];
+  saveState();
+  renderMain();
+};
+
+window.setMasterPassword = async () => {
+  const inp = document.getElementById('pw-master-inp');
+  if(!inp || !inp.value.trim()){ alert('Enter a password.'); return; }
+  state.masterPassword = await sha256(inp.value.trim());
+  inp.value = '';
+  saveState();
+  renderMain();
+};
+
+window.removeMasterPassword = () => {
+  if(!confirm('Remove instructor password? The dashboard will be open to everyone.')) return;
+  state.masterPassword = null;
+  state.teamPasswords = {};
+  currentUser = null;
+  saveState();
+  renderMain();
+};
+
+function setNav(view, el){
+  if(view === 'setup' && currentUser?.type === 'team') return; // team users blocked
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  state.view = view;
+  renderMain();
+}
+
+function syncRequiredParts(){
+  const students = allStudents();
+  state.assignments.forEach(a => {
+    a.parts.forEach(p => {
+      if(p.requiredAll){
+        students.forEach(s => {
+          const k = selKey(p.id, s.id);
+          if(!state.selections[k]){
+            state.selections[k] = {weight: p.weight};
+            saveSelectionField(p.id, s.id, {weight: p.weight});
+          }
+        });
+      }
+    });
+  });
+}
+
+let _lastRenderedView = null;
+function renderMain(opts){
+  opts = opts || {};
+  updateSidebarStats();
+  updateSidebarAuth();
+  const el = document.getElementById('main-content');
+  // Always show login screen until someone signs in
+  if(!currentUser && !DEV_MODE){
+    el.innerHTML = buildLogin();
+    return;
+  }
+  syncRequiredParts();
+  // only save when actually viewing content (not login screen), and not when
+  // we're just re-rendering to reflect a remote update we already saved elsewhere
+  if(!opts.skipSave) saveState();
+  // Team users can't access setup
+  if(currentUser?.type === 'team' && state.view === 'setup') state.view = 'matrix';
+  // Re-rendering replaces the whole page's content, which resets scroll position —
+  // fine when actually switching views (nav click), but jarring for an in-place
+  // update (toggling an SLO, editing a section) while scrolled partway down.
+  const scrollY = window.scrollY;
+  const dndScroll = document.getElementById('assignments-dnd')?.scrollTop || 0;
+  const viewChanged = _lastRenderedView !== state.view;
+  _lastRenderedView = state.view;
+  if(state.view === 'matrix')      el.innerHTML = buildMatrix();
+  if(state.view === 'coverage')    el.innerHTML = buildCoverage();
+  if(state.view === 'summary')     el.innerHTML = buildSummary();
+  if(state.view === 'assessments') el.innerHTML = buildAssessments();
+  if(state.view === 'setup')  { el.innerHTML = buildSetup(); initDragDrop(); if(!viewChanged){ const dnd=document.getElementById('assignments-dnd'); if(dnd) dnd.scrollTop=dndScroll; } if(renamingAssignId){ const inp=document.getElementById('rename-inp-'+renamingAssignId); if(inp){inp.focus();inp.select();} } if(renamingTeamId){ const inp=document.getElementById('rename-team-inp-'+renamingTeamId); if(inp){inp.focus();inp.select();} } if(editingPartId){ const inp=document.getElementById('edit-pname-'+editingPartId); if(inp){inp.focus();inp.select();} } }
+  if(!viewChanged) window.scrollTo(0, scrollY);
+}
+
+function updateSidebarStats(){
+  const total = Object.keys(state.selections).length;
+  const students = allStudents().length;
+  const partCount = allParts().length;
+  document.getElementById('sidebar-stats').innerHTML = `
+    <div style="margin-bottom:4px">${state.teams.length} teams &nbsp;·&nbsp; ${students} students</div>
+    <div>${state.assignments.length} assignments &nbsp;·&nbsp; ${partCount} parts</div>
+  `;
+}
+
+/* ─── MATRIX ─── */
+function buildMatrix(){
+  const {selections} = state;
+  const teams = (currentUser?.type === 'team')
+    ? state.teams.filter(t => t.id === currentUser.teamId)
+    : state.teams;
+
+  function teamCols(team){ return matrixCollapsedTeams.has(team.id) ? 1 : team.students.length; }
+  const totalStudentCols = teams.reduce((s,t) => s + teamCols(t), 0);
+  const colCount = 1 + totalStudentCols;
+
+  let html = `
+  <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
+    <div>
+      <div class="page-title">Selection Matrix</div>
+      <div class="page-sub">${currentUser?.type === 'team'
+        ? 'Check the sections your team is signing up for, then click Save selections.'
+        : 'Students sign up for assignment sections. Click an assignment header to collapse it. Click a team header to collapse its students.'
+      }</div>
+      ${currentUser?.type === 'team' ? `
+      <div style="display:flex;align-items:center;gap:6px;margin-top:8px;font-size:11px;color:var(--green)">
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Showing live data — ${state.assignments.length} assignment${state.assignments.length !== 1 ? 's' : ''}, ${state.assignments.reduce((s,a)=>s+a.parts.length,0)} sections
+      </div>` : ''}
+    </div>
+    ${currentUser?.type === 'team' ? `
+    <div style="display:flex;align-items:center;gap:10px">
+      <span id="student-save-msg" style="font-size:12px;color:var(--green);min-width:60px;text-align:right"></span>
+      <button class="btn btn-primary" onclick="studentSaveSelections()" style="display:flex;align-items:center;gap:6px">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+        Save selections
+      </button>
+    </div>` : ''}
+  </div>`;
+  // Build colgroup html for consistent column widths across all tables
+  const PART_W = 150, STU_W = 78;
+  function buildColgroup(){
+    let cg = `<colgroup><col style="width:${PART_W}px;min-width:${PART_W}px">`;
+    teams.forEach(team => {
+      if(matrixCollapsedTeams.has(team.id)){
+        cg += `<col style="width:${STU_W}px;min-width:${STU_W}px">`;
+      } else {
+        team.students.forEach(() => { cg += `<col style="width:${STU_W}px;min-width:${STU_W}px">`; });
+      }
+    });
+    cg += `</colgroup>`;
+    return cg;
+  }
+
+  function buildTeamHeaders(){
+    let h = `<tr class="team-row"><th class="th-part-spacer"></th>`;
+    teams.forEach(team => {
+      const isCollapsed = matrixCollapsedTeams.has(team.id);
+      h += `<th colspan="${teamCols(team)}" style="border-left:1px solid var(--border);cursor:pointer;user-select:none" onclick="toggleMatrixTeam('${team.id}')">
+        <span style="font-size:9px;margin-right:5px;opacity:0.5">${isCollapsed ? '&#9658;' : '&#9660;'}</span>${team.name}
+      </th>`;
+    });
+    h += `</tr><tr class="student-row"><th class="th-part">Assignment</th>`;
+    teams.forEach(team => {
+      if(matrixCollapsedTeams.has(team.id)){
+        h += `<th class="th-last-in-team" style="color:var(--text3);font-style:italic;font-weight:400">${team.students.length} students</th>`;
+      } else {
+        team.students.forEach((s, idx) => {
+          h += `<th${idx === team.students.length-1 ? ' class="th-last-in-team"' : ''}>${s.name}</th>`;
+        });
+      }
+    });
+    h += `</tr>`;
+    return h;
+  }
+
+  html += `
+  <div style="background:transparent;">
+    <div class="matrix-toolbar" style="border:1px solid var(--border);border-radius:var(--radius);margin-bottom:12px;background:var(--surface)">
+      <span class="toolbar-title">Student Sign-up</span>
+      <div class="toolbar-actions">
+        <button class="btn btn-sm" onclick="collapseAll(true)">Collapse all</button>
+        <button class="btn btn-sm" onclick="collapseAll(false)">Expand all</button>
+        <span class="legend"><span class="legend-dot" style="background:var(--accent)"></span>Signed up &nbsp;<span class="legend-dot" style="background:var(--border)"></span>Available</span>
+        ${currentUser?.type !== 'team' ? `<button class="btn btn-sm btn-danger" onclick="clearAll()">Clear all</button>` : ''}
+      </div>
+    </div>
+    <div style="overflow-x:auto;">
+      <div style="position:sticky;top:0;z-index:10;background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;overflow:hidden">
+        <table style="width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px;">${buildColgroup()}<thead>${buildTeamHeaders()}</thead></table>
+      </div>`;
+
+  state.assignments.forEach(assign => {
+    const isOpen = !assign.collapsed;
+    const assignTotalPts = assign.parts.reduce((s,p) => s+p.weight, 0);
+
+    html += `<div style="margin-bottom:10px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 14px;background:#e8f0fe;cursor:pointer;user-select:none;border-bottom:${isOpen ? '1px solid var(--border)' : 'none'}" onclick="toggleAssignment('${assign.id}')">
+        <span class="collapse-icon${isOpen ? ' open' : ''}" style="color:var(--accent)">&#9658;</span>
+        <span style="font-size:13px;font-weight:600;color:var(--accent);flex:1">${assign.name}</span>
+        <span style="font-size:11px;color:#5a7bc4;font-weight:400">${assign.parts.length} sections &nbsp;·&nbsp; ${assignTotalPts} pts total</span>
+      </div>`;
+
+    if(isOpen){
+      html += `<table style="width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px;">${buildColgroup()}<tbody>`;
+
+      assign.parts.forEach(part => {
+        html += `<tr><td class="td-part" style="padding-left:16px">
+          <div class="part-name" style="display:flex;align-items:center;gap:6px">
+            ${part.name}
+            ${part.isAssessment ? '<span style="font-size:9px;font-weight:700;background:var(--accent-bg);color:var(--accent);border-radius:3px;padding:1px 5px;letter-spacing:0.05em;text-transform:uppercase;white-space:nowrap">Peer Assessed</span>' : ''}
+          </div>
+          <div class="part-meta"><span class="wt-badge">${part.weight} pts</span></div>
+        </td>`;
+
+        teams.forEach(team => {
+          if(matrixCollapsedTeams.has(team.id)){
+            const count = team.students.filter(s => selections[selKey(part.id, s.id)]).length;
+            html += `<td class="last-in-team" style="text-align:center;padding:8px 4px;font-size:12px;font-family:'DM Mono',monospace;color:${count>0?'var(--accent)':'var(--text3)'}">
+              ${count > 0 ? `${count}/${team.students.length}` : '&mdash;'}
+            </td>`;
+          } else {
+            team.students.forEach((s, idx) => {
+              const isLast = idx === team.students.length - 1;
+              const sel = selections[selKey(part.id, s.id)];
+              const locked = !!part.requiredAll;
+              const notMine = currentUser?.type === 'team' && s.id !== currentUser.studentId;
+              const clickable = !locked && !notMine;
+              html += `<td class="td-cell${sel?' claimed':''}${isLast?' last-in-team':''}${locked?' required-lock':''}${notMine?' not-mine':''}" ${clickable ? `onclick="toggleCell('${part.id}','${s.id}')"` : ''} ${notMine ? `title="Only ${s.name} can check this box"` : ''}>
+                <div class="cell-box">
+                  <div class="checkbox${sel?(locked?' required':' checked'):''}">&#10003;</div>
+                  ${locked ? '<div style="font-size:9px;color:var(--green);font-weight:600;letter-spacing:0.03em">ALL</div>' : ''}
+                </div>
+              </td>`;
+            });
+          }
+        });
+        html += `</tr>`;
+      });
+
+      // Subtotal row
+      html += `<tr><td style="padding:8px 16px;background:#e4e3dc;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2)">Total by Student</td>`;
+      teams.forEach(team => {
+        if(matrixCollapsedTeams.has(team.id)){
+          const teamWt = team.students.reduce((sum,s) =>
+            sum + assign.parts.reduce((s2,p) => { const sel=selections[selKey(p.id,s.id)]; return s2+(sel?sel.weight:0); }, 0), 0);
+          html += `<td class="last-in-team" style="text-align:center;background:#e4e3dc;padding:6px 4px;font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:${teamWt>0?'var(--accent)':'var(--text3)'}">
+            ${teamWt > 0 ? teamWt : '&mdash;'}
+          </td>`;
+        } else {
+          team.students.forEach((s, idx) => {
+            const wt = assign.parts.reduce((sum,p) => { const sel=selections[selKey(p.id,s.id)]; return sum+(sel?sel.weight:0); }, 0);
+            html += `<td class="${idx===team.students.length-1?'last-in-team':''}" style="text-align:center;background:#e4e3dc;padding:6px 4px;font-family:'DM Mono',monospace;font-size:12px;font-weight:600;color:${wt>0?'var(--accent)':'var(--text3)'}">
+              ${wt > 0 ? wt : '&mdash;'}
+            </td>`;
+          });
+        }
+      });
+      html += `</tr></tbody></table>`;
+    }
+    html += `</div>`;
+  });
+
+  // Grand total footer
+  html += `<div style="border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;margin-bottom:8px;">
+    <table style="width:100%;border-collapse:collapse;table-layout:fixed;font-size:12px;">${buildColgroup()}<tfoot><tr>
+      <td class="tfoot-label" style="padding:10px 14px">Total Points by Student</td>`;
+  teams.forEach(team => {
+    if(matrixCollapsedTeams.has(team.id)){
+      const tot = team.students.reduce((sum,s) =>
+        sum + Object.entries(selections).filter(([k])=>k.endsWith('_'+s.id)).reduce((s2,[,v])=>s2+v.weight,0), 0);
+      html += `<td class="last-in-team" style="color:${tot>0?'var(--accent)':'var(--text3)'};text-align:center;padding:10px 4px;font-family:'DM Mono',monospace;font-size:12px;font-weight:600">${tot>0?tot:'&mdash;'}</td>`;
+    } else {
+      team.students.forEach((s, idx) => {
+        const tot = Object.entries(selections).filter(([k])=>k.endsWith('_'+s.id)).reduce((sum,[,v])=>sum+v.weight,0);
+        html += `<td class="${idx===team.students.length-1?'last-in-team':''}" style="color:${tot>0?'var(--accent)':'var(--text3)'};text-align:center;padding:10px 4px;font-family:'DM Mono',monospace;font-size:12px;font-weight:600">${tot>0?tot:'&mdash;'}</td>`;
+      });
+    }
+  });
+  html += `</tr></tfoot></table></div>`;
+  html += `</div>`; // close scroll wrapper
+  html += `</div>`; // close outer wrapper
+  return html;
+}
+
+/* ─── STUDENT ASSESSMENTS ─── */
+function shuffle(arr){
+  const a=[...arr];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a;
+}
+
+function getStudentsForPart(partId){
+  // Students signed up for this part, or all students as fallback
+  const groups = state.teams.map(t=>({
+    teamId:t.id, teamName:t.name,
+    students:t.students.filter(s=>state.selections[partId+'_'+s.id])
+      .map(s=>({...s,teamId:t.id,teamName:t.name}))
+  })).filter(g=>g.students.length>0);
+  const src = groups.length>0 ? groups :
+    state.teams.map(t=>({teamId:t.id,teamName:t.name,
+      students:t.students.map(s=>({...s,teamId:t.id,teamName:t.name}))}))
+    .filter(g=>g.students.length>0);
+  return src.flatMap(g=>g.students);
+}
+
+function generateMutualPairings(partId){
+  const all = getStudentsForPart(partId);
+  const teams = [...new Set(all.map(s=>s.teamId))];
+  if(teams.length < 2 || all.length < 2) return [];
+
+  const shuffled = shuffle(all);
+  const pairs = [];
+  const used = new Set();
+
+  // Greedy: pair each student with first available from a different team
+  for(let i=0; i<shuffled.length; i++){
+    if(used.has(i)) continue;
+    let paired = false;
+    for(let j=i+1; j<shuffled.length; j++){
+      if(!used.has(j) && shuffled[i].teamId !== shuffled[j].teamId){
+        pairs.push({
+          aId:shuffled[i].id, aName:shuffled[i].name, aTeam:shuffled[i].teamName,
+          bId:shuffled[j].id, bName:shuffled[j].name, bTeam:shuffled[j].teamName,
+          crossTeam:true
+        });
+        used.add(i); used.add(j); paired=true; break;
+      }
+    }
+    // Fallback: pair with any remaining (same-team edge case)
+    if(!paired){
+      for(let j=i+1; j<shuffled.length; j++){
+        if(!used.has(j)){
+          pairs.push({
+            aId:shuffled[i].id, aName:shuffled[i].name, aTeam:shuffled[i].teamName,
+            bId:shuffled[j].id, bName:shuffled[j].name, bTeam:shuffled[j].teamName,
+            crossTeam:shuffled[i].teamId!==shuffled[j].teamId
+          });
+          used.add(i); used.add(j); paired=true; break;
+        }
+      }
+    }
+    // Odd student out — triangulate with an existing pair instead of leaving unpaired
+    if(!paired){
+      const odd = shuffled[i];
+      // Prefer a pair where odd's team differs from BOTH members (perfect trio)
+      let target = pairs.find(p => !p.triangle && p.aTeam !== odd.teamName && p.bTeam !== odd.teamName);
+      if(!target) target = pairs.find(p => !p.triangle && (p.aTeam !== odd.teamName || p.bTeam !== odd.teamName));
+      if(!target) target = pairs.find(p => !p.triangle);
+      if(target){
+        // Try both distinct cycle orderings; pick the one with fewest same-team reviews
+        // Cycle A→B→C→A means A reviews B, B reviews C, C reviews A
+        const s = [
+          {id:target.aId, name:target.aName, team:target.aTeam},
+          {id:target.bId, name:target.bName, team:target.bTeam},
+          {id:odd.id,     name:odd.name,     team:odd.teamName}
+        ];
+        function violations(x,y,z){ return (x.team===y.team?1:0)+(y.team===z.team?1:0)+(z.team===x.team?1:0); }
+        // Only two distinct cycles: [0,1,2] vs [0,2,1]
+        const [f,g,h] = violations(s[0],s[1],s[2]) <= violations(s[0],s[2],s[1]) ? [s[0],s[1],s[2]] : [s[0],s[2],s[1]];
+        target.aId=f.id; target.aName=f.name; target.aTeam=f.team;
+        target.bId=g.id; target.bName=g.name; target.bTeam=g.team;
+        target.cId=h.id; target.cName=h.name; target.cTeam=h.team;
+        target.triangle = true;
+      }
+      used.add(i);
+    }
+  }
+  return pairs;
+}
+
+window.generateAllPairings = () => {
+  const pairs={};
+  state.assignments.forEach(a=>{ a.parts.forEach(p=>{ if(p.isAssessment) pairs[p.id]=generateMutualPairings(p.id); }); });
+  state.assessmentPairings=pairs; saveState(); renderMain();
+};
+
+window.regeneratePartPairings = (partId) => {
+  state.assessmentPairings[partId]=generateMutualPairings(partId); saveState(); renderMain();
+};
+
+window.toggleAssessmentPart = (partId) => {
+  if(collapsedAssessmentParts.has(partId)) collapsedAssessmentParts.delete(partId);
+  else collapsedAssessmentParts.add(partId);
+  renderMain();
+};
+
+const TEAM_COLORS_A=['#2d5be3','#1a7f4b','#a05c00','#7b3fbd','#c0392b','#0e7490'];
+const TEAM_BKGS_A  =['#eef2fc','#e8f7ef','#fef3e2','#f3eeff','#fdecea','#e0f7fd'];
+
+function buildAssessments(){
+  const assessParts=[];
+  state.assignments.forEach(a=>{ a.parts.forEach(p=>{ if(p.isAssessment) assessParts.push({...p,assignName:a.name}); }); });
+
+  const teamColorMap={}, teamBkgMap={};
+  state.teams.forEach((t,i)=>{ teamColorMap[t.name]=TEAM_COLORS_A[i%TEAM_COLORS_A.length]; teamBkgMap[t.name]=TEAM_BKGS_A[i%TEAM_BKGS_A.length]; });
+
+  // Clear stale pairings if they use the old directional format
+  const allPairs = Object.values(state.assessmentPairings).flat();
+  if(allPairs.length>0 && allPairs[0].assessorName!==undefined){
+    state.assessmentPairings={}; saveState();
+  }
+  const hasPairings=Object.keys(state.assessmentPairings).length>0;
+
+  if(assessParts.length===0) return `
+  <div class="page-header">
+    <div class="page-title">Peer Assessment</div>
+    <div class="page-sub">No sections are marked as Peer Assessed yet. In Setup, check "Peer Assessed" when adding sections to an assignment.</div>
+  </div>`;
+
+  let html=`
+  <div class="page-header" style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:12px">
+    <div>
+      <div class="page-title">Peer Assessment</div>
+      <div class="page-sub">Each pair assesses each other's work. All pairs are cross-team.</div>
+    </div>
+    <button class="btn btn-primary" onclick="generateAllPairings()" style="display:flex;align-items:center;gap:6px;white-space:nowrap">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+      ${hasPairings ? 'Re-randomize all' : 'Generate pairings'}
+    </button>
+  </div>`;
+
+  if(!hasPairings){
+    html+=`<div class="empty" style="margin-top:40px">Click "Generate pairings" to create mutual peer assessment pairs across teams.</div>`;
+    return html;
+  }
+
+  assessParts.forEach(part=>{
+    const isCollapsed = collapsedAssessmentParts.has(part.id);
+    const pairs = state.assessmentPairings[part.id]||[];
+    html+=`
+    <div style="margin-bottom:12px;border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;max-width:600px">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 14px;background:var(--surface2);cursor:pointer;user-select:none" onclick="toggleAssessmentPart('${part.id}')">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span class="collapse-icon${isCollapsed?'':' open'}">&#9658;</span>
+          <div>
+            <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2)">${part.assignName}</div>
+            <div style="font-size:13px;font-weight:600;color:var(--text);margin-top:1px">${part.name}
+              <span style="font-size:10px;font-weight:700;background:var(--accent-bg);color:var(--accent);border-radius:3px;padding:1px 6px;letter-spacing:0.05em;text-transform:uppercase;margin-left:6px">Peer Assessed</span>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px" onclick="event.stopPropagation()">
+          ${pairs.length>0 ? `<span style="font-size:11px;color:var(--text3)">${pairs.length} pair${pairs.length!==1?'s':''}</span>` : ''}
+          <button class="btn btn-sm" onclick="regeneratePartPairings('${part.id}')" style="display:flex;align-items:center;gap:5px;white-space:nowrap">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+            Re-randomize
+          </button>
+        </div>
+      </div>`;
+
+    if(!isCollapsed){
+
+    if(pairs.length===0){
+      html+=`<div style="font-size:13px;color:var(--text2);padding:12px 16px">Need at least 2 teams with students to generate pairings.</div>`;
+    } else {
+      const crossCount = pairs.filter(p=>p.crossTeam).length;
+      html+=`
+      <div style="font-size:11px;color:var(--text2);padding:8px 14px 0">${pairs.length} pair${pairs.length!==1?'s':''}</div>
+      <div class="coverage-table-wrap" style="border:none;border-radius:0;border-top:1px solid var(--border)"><table style="width:100%">
+        <tbody>`;
+      [...pairs].sort((a,b) => (a.triangle?1:0)-(b.triangle?1:0)).forEach((pair,idx)=>{
+        const aClr=teamColorMap[pair.aTeam]||'var(--accent)', aBkg=teamBkgMap[pair.aTeam]||'var(--accent-bg)';
+        const bClr=pair.bId ? (teamColorMap[pair.bTeam]||'var(--accent)') : 'var(--text3)';
+        const bBkg=pair.bId ? (teamBkgMap[pair.bTeam]||'var(--accent-bg)') : 'var(--surface2)';
+        if(pair.triangle){
+          const cClr=teamColorMap[pair.cTeam]||'var(--accent)', cBkg=teamBkgMap[pair.cTeam]||'var(--accent-bg)';
+          const allCross = pair.aTeam!==pair.bTeam && pair.bTeam!==pair.cTeam && pair.aTeam!==pair.cTeam;
+          // Cyclic: A reviews B, B reviews C, C reviews A
+          function studentChip(name, team, clr, bkg){
+            return `<div style="display:flex;flex-direction:column;gap:3px;align-items:flex-start">
+              <div style="font-weight:600;font-size:13px">${name}</div>
+              <span style="font-size:10px;font-weight:600;background:${bkg};color:${clr};border-radius:3px;padding:1px 6px">${team}</span>
+            </div>`;
+          }
+          function arrow(label){
+            return `<div style="display:flex;flex-direction:column;align-items:center;gap:1px;color:var(--text3)">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="13 6 19 12 13 18"/></svg>
+              <span style="font-size:9px;letter-spacing:0.04em;text-transform:uppercase">${label}</span>
+            </div>`;
+          }
+          html+=`<tr>
+            <td style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace">${idx+1}</td>
+            <td colspan="3" style="padding:10px 12px">
+              <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+                ${studentChip(pair.aName,pair.aTeam,aClr,aBkg)}
+                ${arrow('reviews')}
+                ${studentChip(pair.bName,pair.bTeam,bClr,bBkg)}
+                ${arrow('reviews')}
+                ${studentChip(pair.cName,pair.cTeam,cClr,cBkg)}
+                ${arrow('reviews')}
+                <div style="font-size:11px;color:var(--text3);font-style:italic">${pair.aName}</div>
+              </div>
+              <span style="font-size:10px;font-weight:600;background:var(--amber-bg);color:var(--amber);border-radius:3px;padding:1px 6px">▲ trio</span>
+            </td>
+        </tr>`;
+        } else {
+        html+=`<tr>
+          <td style="font-size:11px;color:var(--text3);font-family:'DM Mono',monospace">${idx+1}</td>
+          <td>
+            <div style="font-weight:600;font-size:13px">${pair.aName}</div>
+            <span style="font-size:10px;font-weight:600;background:${aBkg};color:${aClr};border-radius:3px;padding:1px 6px">${pair.aTeam}</span>
+          </td>
+          <td style="text-align:center;color:var(--text2);font-size:16px;font-weight:300;letter-spacing:-1px">↔</td>
+          <td>
+            <div style="font-weight:600;font-size:13px;${pair.unpaired?'color:var(--text3);font-style:italic':''}">${pair.bName}</div>
+            ${pair.bId ? `<span style="font-size:10px;font-weight:600;background:${bBkg};color:${bClr};border-radius:3px;padding:1px 6px">${pair.bTeam}</span>` : ''}
+          </td>
+        </tr>`;
+        }
+      });
+      html+=`</tbody></table></div>`;
+    }
+    } // end if(!isCollapsed)
+    html+=`</div>`; // close collapsible card
+  });
+  return html;
+}
+
+/* ─── SLO COVERAGE ─── */
+function buildCoverage(){
+  const {slos, selections, assignments} = state;
+  const allStu = allStudents();
+  const students = (currentUser?.type === 'team')
+    ? allStu.filter(s => s.teamId === currentUser.teamId)
+    : allStu;
+
+  // Helper: pts a student contributes to a given SLO
+  function studentSloWt(student, si){
+    let w = 0;
+    assignments.forEach(a => {
+      a.parts.forEach(p => {
+        if(!(p.slos||[]).includes(si)) return;
+        const sel = selections[selKey(p.id, student.id)];
+        if(sel) w += sel.weight;
+      });
+    });
+    return w;
+  }
+
+  // Helper: total pts claimed by a student
+  function studentTotalWt(student){
+    return Object.entries(selections)
+      .filter(([k]) => k.endsWith('_' + student.id))
+      .reduce((sum,[,v]) => sum + v.weight, 0);
+  }
+
+  // Overall SLO totals (across all students)
+  const sloTotals = slos.map((_,si) => students.reduce((sum,s) => sum + studentSloWt(s,si), 0));
+  const maxSloWt = Math.max(...sloTotals, 1);
+
+  // Max possible pts per SLO (sum of weights of sections mapped to that SLO)
+  const sloPossible = slos.map((_,si) =>
+    assignments.flatMap(a => a.parts).filter(p => (p.slos||[]).includes(si)).reduce((s,p) => s+p.weight, 0));
+
+  const sloHeader = slos.map((s,si) =>
+    `<th style="color:${SLO_COLORS[si]}">${s.split(':')[0]}</th>`).join('');
+  const mono = `font-family:'DM Mono',monospace`;
+
+  function sloCell(w, si){
+    return w > 0
+      ? `<td><span style="font-weight:600;color:${SLO_COLORS[si]};${mono}">${w}</span></td>`
+      : `<td><span class="tag-none">&mdash;</span></td>`;
+  }
+  function totalCell(w){
+    return `<td><strong style="${mono}">${w > 0 ? w : '&mdash;'}</strong></td>`;
+  }
+
+  let html = `
+  <div class="page-header">
+    <div class="page-title">SLO Coverage</div>
+    <div class="page-sub">Point contributions toward each Student Learning Outcome, broken down by assignment, team, and student.</div>
+  </div>`;
+
+  // ── TOTALS ──
+  html += `<div class="section-title" style="margin-bottom:12px">Totals</div>
+  <div class="coverage-grid" style="margin-bottom:28px">`;
+  slos.forEach((slo, si) => {
+    const w = sloTotals[si];
+    const pct = Math.round((w / maxSloWt) * 100);
+    html += `<div class="slo-card">
+      <div class="slo-card-name" style="color:${SLO_COLORS[si]}">${slo}</div>
+      <div class="slo-bar-bg"><div class="slo-bar-fill" style="width:${pct}%;background:${SLO_COLORS[si]}"></div></div>
+      <div class="slo-card-stats"><span>${w} pts</span></div>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // ── BY ASSIGNMENT ──
+  html += `<div class="section-title" style="margin-bottom:12px">By assignment</div>
+  <div class="coverage-table-wrap" style="margin-bottom:28px"><table>
+    <thead><tr><th>Assignment</th>${sloHeader}<th>Total pts.</th></tr></thead><tbody>`;
+
+  assignments.forEach(a => {
+    const assignSloWt = slos.map((_,si) => {
+      const matchingParts = a.parts.filter(p => (p.slos||[]).includes(si));
+      if(matchingParts.length === 0) return null; // no section mapped to this SLO
+      return students.reduce((sum, s) => {
+        return sum + matchingParts.reduce((s2,p) => {
+          const sel = selections[selKey(p.id, s.id)];
+          return s2 + (sel ? sel.weight : 0);
+        }, 0);
+      }, 0);
+    });
+    const assignTotal = students.reduce((sum,s) =>
+      sum + a.parts.reduce((s2,p) => {
+        const sel = selections[selKey(p.id, s.id)];
+        return s2 + (sel ? sel.weight : 0);
+      }, 0), 0);
+
+    html += `<tr>
+      <td><strong>${a.name}</strong></td>
+      ${assignSloWt.map((w,si) => w === null
+        ? `<td><span class="tag-none">&mdash;</span></td>`
+        : sloCell(w, si)).join('')}
+      ${totalCell(assignTotal)}
+    </tr>`;
+  });
+
+  // totals row
+  html += `<tr style="border-top:2px solid var(--border)">
+    <td style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2)">Total</td>
+    ${sloTotals.map((w,si) => sloCell(w,si)).join('')}
+    ${totalCell(sloTotals.reduce((s,v)=>s+v,0))}
+  </tr>`;
+  html += `</tbody></table></div>`;
+
+  // ── BY TEAM ──
+  html += `<div class="section-title" style="margin-bottom:12px">By team</div>
+  <div class="coverage-table-wrap" style="margin-bottom:28px"><table>
+    <thead><tr><th>Team</th>${sloHeader}<th>Parts</th><th>Total pts.</th></tr></thead><tbody>`;
+
+  const covTeams = (currentUser?.type === 'team') ? state.teams.filter(t => t.id === currentUser.teamId) : state.teams;
+  covTeams.forEach(team => {
+    const teamSloWt = slos.map((_,si) =>
+      team.students.reduce((sum,s) => sum + studentSloWt(s,si), 0));
+    const teamTotal = team.students.reduce((sum,s) => sum + studentTotalWt(s), 0);
+    const teamParts = allParts().filter(p =>
+      team.students.some(s => selections[selKey(p.id, s.id)])).length;
+
+    html += `<tr>
+      <td><strong>${team.name}</strong></td>
+      ${teamSloWt.map((w,si) => sloCell(w,si)).join('')}
+      <td>${teamParts > 0 ? teamParts : '<span class="tag-none">&mdash;</span>'}</td>
+      ${totalCell(teamTotal)}
+    </tr>`;
+  });
+
+  // totals row
+  const grandTotal = students.reduce((sum,s) => sum + studentTotalWt(s), 0);
+  const grandParts = allParts().filter(p => students.some(s => selections[selKey(p.id,s.id)])).length;
+  html += `<tr style="border-top:2px solid var(--border)">
+    <td style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2)">Total</td>
+    ${sloTotals.map((w,si) => sloCell(w,si)).join('')}
+    <td><strong style="${mono}">${grandParts > 0 ? grandParts : '&mdash;'}</strong></td>
+    ${totalCell(grandTotal)}
+  </tr>`;
+  html += `</tbody></table></div>`;
+
+  // ── BY STUDENT ──
+  const maxPossible = allParts().reduce((s,p) => s+p.weight, 0);
+  const stuSloHeader = slos.map((s,si) =>
+    `<th style="color:${SLO_COLORS[si]}">${s.split(':')[0]}<br><span style="font-weight:400;font-size:10px;color:var(--text3)">${sloPossible[si]} possible</span></th>`).join('');
+
+  function sloCellWithPossible(w, si){
+    const possible = sloPossible[si];
+    if(!w) return `<td><span class="tag-none">&mdash;</span></td>`;
+    const pct = possible > 0 ? Math.round(w / possible * 100) : 0;
+    return `<td><span style="font-weight:600;color:${SLO_COLORS[si]};${mono}">${w}</span><span style="color:var(--text2);font-size:11px;${mono}"> / ${possible} (${pct}%)</span></td>`;
+  }
+
+  html += `<div class="section-title" style="margin-bottom:12px">By student</div>
+  <div class="coverage-table-wrap"><table>
+    <thead><tr><th>Student</th><th>Team</th>${stuSloHeader}<th>Parts</th><th>Total pts.<br><span style="font-weight:400;font-size:10px;color:var(--text3)">${maxPossible} possible</span></th></tr></thead><tbody>`;
+
+  covTeams.forEach(team => {
+    team.students.forEach(student => {
+      const stuSloWt = slos.map((_,si) => studentSloWt(student, si));
+      const stuTotal = studentTotalWt(student);
+      const stuParts = allParts().filter(p => selections[selKey(p.id, student.id)]).length;
+      const stuPct = maxPossible > 0 ? Math.round(stuTotal / maxPossible * 100) : 0;
+
+      html += `<tr>
+        <td><strong>${student.name}</strong></td>
+        <td style="color:var(--text2)">${team.name}</td>
+        ${stuSloWt.map((w,si) => sloCellWithPossible(w,si)).join('')}
+        <td>${stuParts > 0 ? stuParts : '<span class="tag-none">&mdash;</span>'}</td>
+        <td>${stuTotal > 0
+          ? `<span style="font-weight:600;${mono}">${stuTotal}</span>
+             <span style="color:var(--text2);font-size:11px;${mono}"> / ${maxPossible} (${stuPct}%)</span>`
+          : '<span class="tag-none">&mdash;</span>'}</td>
+      </tr>`;
+    });
+  });
+
+  // totals row
+  html += `<tr style="border-top:2px solid var(--border)">
+    <td colspan="2" style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2)">Total</td>
+    ${sloTotals.map((w,si) => sloCell(w,si)).join('')}
+    <td><strong style="${mono}">${grandParts > 0 ? grandParts : '&mdash;'}</strong></td>
+    ${totalCell(grandTotal)}
+  </tr>`;
+  html += `</tbody></table></div>`;
+
+  return html;
+}
+
+/* ─── SETUP ─── */
+function buildSetup(){
+  const {teams, slos, assignments} = state;
+  // Build password management card
+  const pwCard = `
+  <div class="setup-card" style="margin-bottom:20px">
+    <div class="setup-card-title" style="display:flex;align-items:center;justify-content:space-between">
+      <span>🔒 Access & Passwords</span>
+    </div>
+    <div style="margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border)">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);margin-bottom:8px">Instructor (Master) Password</div>
+      ${state.masterPassword
+        ? `<div style="display:flex;align-items:center;gap:8px;font-size:13px"><span style="color:var(--green)">✓ Set</span><button class="btn btn-sm btn-danger" onclick="removeMasterPassword()">Remove</button><span style="font-size:11px;color:var(--text3)">Removes all passwords and opens the dashboard</span></div>`
+        : `<div style="display:flex;gap:6px"><input class="form-input" type="password" id="pw-master-inp" placeholder="Set instructor password" style="max-width:260px"><button class="btn btn-primary btn-sm" onclick="setMasterPassword()">Set password</button></div>`
+      }
+      ${!state.masterPassword ? '<div style="font-size:11px;color:var(--text3);margin-top:6px">Setting a master password enables the login screen for all users.</div>' : ''}
+    </div>
+    <div>
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;color:var(--text2);margin-bottom:10px">Team Passwords</div>
+      ${!state.masterPassword
+        ? '<div style="font-size:12px;color:var(--text3)">Set a master password first to enable team passwords.</div>'
+        : teams.map(t => `
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+            <span style="font-size:13px;font-weight:500;min-width:90px">${t.name}</span>
+            ${state.teamPasswords[t.id]
+              ? `<span style="font-size:12px;color:var(--green)">✓ Password set</span><button class="btn btn-sm btn-danger" onclick="removeTeamPassword('${t.id}')">Remove</button>`
+              : `<input class="form-input" type="password" id="pw-team-inp-${t.id}" placeholder="Set team password" style="max-width:200px"><button class="btn btn-primary btn-sm" onclick="setTeamPassword('${t.id}')">Set</button>`
+            }
+          </div>`).join('')
+      }
+    </div>
+  </div>`;
+
+  const teamsHtml = teams.length === 0
+    ? '<div class="empty" style="padding:16px">No teams yet</div>'
+    : teams.map(team => `
+      <div class="team-block">
+        <div class="team-block-header">
+          ${renamingTeamId === team.id
+            ? `<input class="form-input team-block-name" id="rename-team-inp-${team.id}" value="${team.name.replace(/"/g,'&quot;')}"
+                style="font-size:13px;font-weight:600;padding:2px 6px;flex:1"
+                onkeydown="if(event.key==='Enter')finishRenameTeam('${team.id}');if(event.key==='Escape'){renamingTeamId=null;renderMain();}"
+                onblur="finishRenameTeam('${team.id}')">`
+            : `<span class="team-block-name" ondblclick="renamingTeamId='${team.id}';renderMain()" title="Double-click to rename" style="cursor:text">${team.name}</span>
+               <button class="rename-btn" title="Rename team" onclick="renamingTeamId='${team.id}';renderMain()">
+                 <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg>
+               </button>`
+          }
+          <span class="team-block-count">${team.students.length} student${team.students.length !== 1 ? 's' : ''}</span>
+          <button class="btn btn-sm btn-danger" onclick="if(this.dataset.confirm==='1'){removeTeam('${team.id}')}else{this.dataset.confirm='1';this.textContent='Sure?';setTimeout(()=>{this.dataset.confirm='';this.textContent='Delete';},3000)}">Delete</button>
+        </div>
+        <div class="student-list">
+          ${team.students.length === 0
+            ? '<div style="padding:4px 6px;font-size:12px;color:var(--text3)">No students yet</div>'
+            : team.students.map(s => `
+              <div class="student-row-item">
+                <span>${s.name}</span>
+                <button class="remove-btn" onclick="removeStudent('${team.id}','${s.id}')">&#215;</button>
+              </div>`).join('')}
+        </div>
+        <div class="student-add-row">
+          <input class="form-input" id="inp-stu-${team.id}" placeholder="Add student name" style="font-size:12px;padding:5px 8px" onkeydown="if(event.key==='Enter')addStudent('${team.id}')">
+          <button class="btn btn-primary btn-sm" onclick="addStudent('${team.id}')">Add</button>
+        </div>
+      </div>`).join('');
+
+  const gripIcon = `<svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor"><circle cx="3" cy="2.5" r="1.3"/><circle cx="7" cy="2.5" r="1.3"/><circle cx="3" cy="7" r="1.3"/><circle cx="7" cy="7" r="1.3"/><circle cx="3" cy="11.5" r="1.3"/><circle cx="7" cy="11.5" r="1.3"/></svg>`;
+
+  const assignHtml = assignments.length === 0
+    ? '<div class="empty" style="padding:16px">No assignments yet</div>'
+    : assignments.map(a => {
+      const isExpanded = setupExpandedAssignments.has(a.id);
+      return `
+      <div class="assign-block" data-aid="${a.id}">
+        <div class="assign-block-header" style="cursor:pointer" onclick="toggleSetupAssignment('${a.id}')" title="Click to expand — assign SLOs and manage sections">
+          <div class="drag-handle" title="Drag to reorder" onclick="event.stopPropagation()">${gripIcon}</div>
+          <div class="assign-block-info" style="flex:1;min-width:0">
+            <div class="assign-block-name" style="display:flex;align-items:center;gap:8px">
+              <span class="collapse-icon${isExpanded ? ' open' : ''}">&#9658;</span>
+              ${renamingAssignId === a.id
+                ? `<input class="form-input" id="rename-inp-${a.id}" value="${a.name.replace(/"/g,'&quot;')}"
+                    style="font-size:13px;font-weight:600;padding:2px 6px;width:220px"
+                    onclick="event.stopPropagation()"
+                    onkeydown="if(event.key==='Enter')finishRenameAssignment('${a.id}');if(event.key==='Escape'){renamingAssignId=null;renderMain();}"
+                    onblur="finishRenameAssignment('${a.id}')">`
+                : `<span ondblclick="event.stopPropagation();renamingAssignId='${a.id}';renderMain()" title="Double-click to rename" style="cursor:text">${a.name}</span>`
+              }
+              <span style="font-size:11px;font-weight:400;color:var(--text3)">${a.parts.length} parts</span>
+              ${(() => {
+                const unionSlos = [...new Set(a.parts.flatMap(p => p.slos||[]))];
+                return `<span style="font-size:11px;font-weight:400;color:${unionSlos.length ? 'var(--accent)' : 'var(--red)'}">${unionSlos.length ? unionSlos.length + ' SLO' + (unionSlos.length !== 1 ? 's' : '') + ' across sections' : 'No SLOs assigned yet'}</span>`;
+              })()}
+            </div>
+          </div>
+          <button class="btn btn-sm btn-danger" onclick="event.stopPropagation();removeAssignment('${a.id}')">Delete</button>
+        </div>
+        ${isExpanded ? `
+        <div class="assign-parts-list" data-aid="${a.id}">
+          ${a.parts.length === 0
+            ? '<div style="padding:4px 6px;font-size:12px;color:var(--text3)">No parts yet</div>'
+            : a.parts.map(p => {
+              const pSlos = (p.slos || []).slice().sort((x,y) => x - y);
+              if(editingPartId === p.id){
+                return `<div class="assign-part-row" data-pid="${p.id}" data-aid="${a.id}" style="flex-wrap:wrap;gap:6px;padding:8px 10px;background:var(--accent-bg)">
+                  <input class="form-input" id="edit-pname-${p.id}" value="${p.name.replace(/"/g,'&quot;')}" placeholder="Section name" style="font-size:12px;padding:4px 7px;flex:1;min-width:120px" onkeydown="if(event.key==='Enter')savePartEdit('${a.id}','${p.id}');if(event.key==='Escape'){editingPartId=null;renderMain();}">
+                  <input class="form-input" id="edit-pwt-${p.id}" type="number" min="0" value="${p.weight}" style="font-size:12px;padding:4px 7px;width:64px">
+                  <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);cursor:pointer;white-space:nowrap;user-select:none">
+                    <input type="checkbox" id="edit-passessment-${p.id}" ${p.isAssessment?'checked':''} style="width:13px;height:13px;accent-color:var(--accent)"> Peer Assessed
+                  </label>
+                  <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--green);cursor:pointer;white-space:nowrap;user-select:none">
+                    <input type="checkbox" id="edit-prequired-${p.id}" ${p.requiredAll?'checked':''} style="width:13px;height:13px;accent-color:var(--green)"> All must complete
+                  </label>
+                  <div style="width:100%;padding-top:6px;border-top:1px solid var(--border)">
+                    <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Assign SLOs <span style="font-weight:400;text-transform:none;color:var(--text3)">(saved instantly — no need to click Save below)</span></div>
+                    <div style="display:flex;flex-wrap:wrap;gap:4px">
+                      ${slos.map((s,si) => {
+                        const on = pSlos.includes(si);
+                        const expanded = expandedSloIdx.has(p.id+':'+si);
+                        return `<span style="display:inline-flex;align-items:center;gap:0;border-radius:20px;overflow:hidden;border:1px solid ${on?'transparent':SLO_COLORS[si]+'44'};background:${on?SLO_COLORS[si]:SLO_BKGS[si]}">
+                          <span class="slo-pick${on?' on':''}" style="border:none;border-radius:0;background:transparent;color:${on?'#fff':SLO_COLORS[si]};padding:4px 8px 4px 10px;margin:0" onclick="togglePartSlo('${a.id}','${p.id}',${si})">${s.split(':')[0]}</span>
+                          <span onclick="event.stopPropagation();toggleSloExpand('${p.id}',${si})" style="cursor:pointer;padding:4px 8px 4px 4px;color:${on?'rgba(255,255,255,0.8)':SLO_COLORS[si]};font-size:10px;line-height:1;user-select:none" title="Show description">${expanded?'▴':'▾'}</span>
+                        </span>`;
+                      }).join('')}
+                    </div>
+                    ${slos.map((s,si) => expandedSloIdx.has(p.id+':'+si) ? `
+                      <div style="font-size:11px;color:var(--text2);background:${SLO_BKGS[si]};border:1px solid ${SLO_COLORS[si]}33;border-radius:6px;padding:6px 10px;margin-top:6px">
+                        <span style="font-weight:600;color:${SLO_COLORS[si]}">${s.split(':')[0]}:</span> ${SLO_DESCRIPTIONS[si]||''}
+                      </div>` : '').join('')}
+                  </div>
+                  <div style="width:100%;display:flex;gap:6px;padding-top:8px;border-top:1px solid var(--border)">
+                    <button class="btn btn-primary btn-sm" onclick="savePartEdit('${a.id}','${p.id}')">Save &amp; close</button>
+                    <button class="btn btn-sm" onclick="editingPartId=null;renderMain()">Close</button>
+                  </div>
+                </div>`;
+              }
+              return `<div class="assign-part-row" data-pid="${p.id}" data-aid="${a.id}">
+                <div class="drag-handle" style="padding:0 6px 0 0" title="Drag to reorder">${gripIcon}</div>
+                <span>${p.name}</span>
+                ${p.isAssessment ? '<span style="font-size:10px;font-weight:600;background:var(--accent-bg);color:var(--accent);border-radius:4px;padding:1px 5px;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap">Peer Assessed</span>' : ''}
+                ${p.requiredAll ? '<span style="font-size:10px;font-weight:600;background:var(--green-bg);color:var(--green);border-radius:4px;padding:1px 5px;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap">All required</span>' : ''}
+                ${pSlos.length ? `<span style="font-size:10px;font-weight:600;background:var(--accent-bg);color:var(--accent);border-radius:4px;padding:1px 5px;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap" title="${pSlos.map(si=>slos[si]).join(', ')}">${pSlos.map(si=>slos[si].split(':')[0]).join(', ')}</span>` : `<span style="font-size:10px;font-weight:600;background:var(--red-bg);color:var(--red);border-radius:4px;padding:1px 5px;letter-spacing:0.04em;text-transform:uppercase;white-space:nowrap">No SLOs</span>`}
+                <span class="assign-part-wt">${p.weight} pts</span>
+                <button class="btn btn-sm" onclick="event.stopPropagation();editingPartId='${p.id}';renderMain()" style="padding:2px 7px;font-size:11px">Edit</button>
+                <button class="remove-btn" onclick="removeAssignPart('${a.id}','${p.id}')">&#215;</button>
+              </div>`;
+            }).join('')}
+        </div>
+        <div class="assign-part-add" style="flex-wrap:wrap;gap:6px">
+          <input class="form-input" id="inp-pname-${a.id}" placeholder="Section name" value="${(newPartDrafts[a.id]?.name || '').replace(/"/g,'&quot;')}" style="font-size:12px;padding:5px 8px;flex:1;min-width:120px" oninput="syncNewPartDraft('${a.id}')" onkeydown="if(event.key==='Enter')addAssignPart('${a.id}')">
+          <input class="form-input" id="inp-pwt-${a.id}" type="number" min="0" value="${newPartDrafts[a.id]?.weight ?? 10}" placeholder="pts" style="font-size:12px;padding:5px 8px;width:64px" oninput="syncNewPartDraft('${a.id}')">
+          <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text2);cursor:pointer;white-space:nowrap;user-select:none">
+            <input type="checkbox" id="inp-passessment-${a.id}" ${newPartDrafts[a.id]?.isAssessment ? 'checked' : ''} style="width:13px;height:13px;accent-color:var(--accent)" onchange="syncNewPartDraft('${a.id}')">
+            Peer Assessed
+          </label>
+          <label style="display:flex;align-items:center;gap:5px;font-size:11px;color:var(--green);cursor:pointer;white-space:nowrap;user-select:none" title="All team members will be automatically checked and cannot uncheck">
+            <input type="checkbox" id="inp-prequired-${a.id}" ${newPartDrafts[a.id]?.requiredAll ? 'checked' : ''} style="width:13px;height:13px;accent-color:var(--green)" onchange="syncNewPartDraft('${a.id}')">
+            All must complete
+          </label>
+          <div style="width:100%">
+            <div style="font-size:11px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:6px">Assign SLOs</div>
+            <div style="display:flex;flex-wrap:wrap;gap:4px">
+              ${(() => {
+                const picked = newPartSlos[a.id] || [];
+                return slos.map((s,si) => {
+                  const on = picked.includes(si);
+                  return `<span class="slo-pick${on?' on':''}" style="border-radius:20px;border:1px solid ${on?'transparent':SLO_COLORS[si]+'44'};background:${on?SLO_COLORS[si]:SLO_BKGS[si]};color:${on?'#fff':SLO_COLORS[si]};padding:4px 10px" onclick="toggleNewPartSlo('${a.id}',${si})">${s.split(':')[0]}</span>`;
+                }).join('');
+              })()}
+            </div>
+          </div>
+          <button class="btn btn-primary btn-sm" onclick="addAssignPart('${a.id}')">Add section</button>
+        </div>` : ''}
+      </div>`;
+    }).join('');
+
+  return `
+  <div class="page-header">
+    <div class="page-title">Setup</div>
+    <div class="page-sub">Manage teams, students, SLOs, and assignments. SLOs are assigned per section within each assignment.</div>
+  </div>
+  ${pwCard}
+  <div class="setup-grid">
+    <div class="setup-card">
+      <div class="setup-card-title" style="display:flex;align-items:center;justify-content:space-between">
+        <span>Assignments (${assignments.length})</span>
+        <button class="btn btn-sm" onclick="setupAssignmentsExpanded=!setupAssignmentsExpanded;renderMain()" style="font-size:11px">
+          ${setupAssignmentsExpanded ? '&#9652; Hide' : '&#9662; Manage assignments'}
+        </button>
+      </div>
+      ${setupAssignmentsExpanded ? `
+      <div id="assignments-dnd" style="max-height:max(520px, calc(100vh - 220px));overflow-y:auto;padding-right:4px;margin-bottom:14px">
+        ${assignHtml}
+      </div>
+      <div style="padding-top:10px;border-top:1px solid var(--border)">
+        <div style="display:flex;gap:8px;margin-bottom:8px">
+          <input class="form-input" id="inp-aname" placeholder="New assignment name" onkeydown="if(event.key==='Enter')addAssignment()">
+          <button class="btn btn-primary btn-sm" onclick="addAssignment()">Add assignment</button>
+        </div>
+
+      </div>` : ''}
+    </div>
+    <div>
+      <div class="setup-card" style="margin-bottom:16px">
+        <div class="setup-card-title" style="display:flex;align-items:center;justify-content:space-between">
+          <span>Teams &amp; Students (${teams.length} teams)</span>
+          <button class="btn btn-sm" onclick="setupTeamsExpanded=!setupTeamsExpanded;renderMain()" style="font-size:11px">
+            ${setupTeamsExpanded ? '&#9652; Hide' : '&#9662; Manage teams'}
+          </button>
+        </div>
+        ${setupTeamsExpanded ? `
+        ${teamsHtml}
+        <div style="display:flex;gap:8px;margin-top:10px;padding-top:10px;border-top:1px solid var(--border)">
+          <input class="form-input" id="inp-team" placeholder="New team name" onkeydown="if(event.key==='Enter')addTeam()">
+          <button class="btn btn-primary btn-sm" onclick="addTeam()">Add team</button>
+        </div>` : ''}
+      </div>
+      <div class="setup-card">
+        <div class="setup-card-title" style="display:flex;align-items:center;justify-content:space-between">
+          <span>Student Learning Outcomes (${slos.length})</span>
+          <button class="btn btn-sm" onclick="setupSlosExpanded=!setupSlosExpanded;renderMain()" style="font-size:11px">
+            ${setupSlosExpanded ? '&#9652; Hide' : '&#9662; Manage SLOs'}
+          </button>
+        </div>
+        ${setupSlosExpanded ? `
+        ${slos.map((s,i) => {
+          const isEx = expandedSloIdx.has('global:'+i);
+          return `<div class="list-row" style="flex-direction:column;align-items:stretch;gap:0;padding:6px 0">
+            <div style="display:flex;align-items:center;gap:8px">
+              <span class="slo-chip" style="background:${SLO_BKGS[i]};color:${SLO_COLORS[i]};cursor:pointer;user-select:none" onclick="toggleSloExpand('global',${i})" title="Click to expand">${s} ${isEx ? '▴' : '▾'}</span>
+              <button class="remove-btn" onclick="removeSlo(${i})">&#215;</button>
+            </div>
+            ${isEx ? `<div style="font-size:11px;color:var(--text2);background:${SLO_BKGS[i]};border:1px solid ${SLO_COLORS[i]}44;border-radius:6px;padding:7px 10px;margin-top:5px;line-height:1.5">${SLO_DESCRIPTIONS[i]||''}</div>` : ''}
+          </div>`;
+        }).join('')}
+        ` : ''}
+      </div>
+    </div>
+  </div>`;
+}
+
+/* ─── ACTIONS ─── */
+// Matrix
+window.toggleCell = (pid, sid) => {
+  const part = findPart(pid);
+  if(part?.requiredAll) return; // locked — all must complete
+  if(currentUser?.type === 'team' && sid !== currentUser.studentId) return; // can only check your own boxes
+  const k = selKey(pid, sid);
+  if(state.selections[k]){
+    delete state.selections[k];
+    saveSelectionField(pid, sid, firebase.firestore.FieldValue.delete());
+  } else if(part){
+    state.selections[k] = {weight: part.weight};
+    saveSelectionField(pid, sid, {weight: part.weight});
+  }
+  renderMain();
+};
+window.updateWeight = (pid, sid, val) => {
+  const k = selKey(pid, sid);
+  if(state.selections[k]){
+    const weight = parseInt(val) || 1;
+    state.selections[k].weight = weight;
+    saveSelectionField(pid, sid, {weight});
+  }
+};
+window.clearAll = () => {
+  if(confirm('Clear all selections?')){ state.selections = {}; saveSelections(); renderMain(); }
+};
+window.toggleAssignment = (aid) => {
+  const a = state.assignments.find(a => a.id === aid);
+  if(a) a.collapsed = !a.collapsed;
+  renderMain();
+};
+window.collapseAll = (collapse) => {
+  state.assignments.forEach(a => a.collapsed = collapse);
+  renderMain();
+};
+
+// Teams
+window.addTeam = () => {
+  const inp = document.getElementById('inp-team');
+  const v = inp ? inp.value.trim() : '';
+  if(!v) return;
+  state.teams.push({id: uid(), name: v, students: []});
+  renderMain();
+};
+window.removeTeam = (teamId) => {
+  const team = state.teams.find(t => t.id === teamId);
+  if(team) team.students.forEach(s => {
+    Object.keys(state.selections).forEach(k => { if(k.endsWith('_' + s.id)) delete state.selections[k]; });
+  });
+  state.teams = state.teams.filter(t => t.id !== teamId);
+  saveSelections(); saveState(); renderMain();
+};
+window.finishRenameTeam = (teamId) => {
+  const inp = document.getElementById('rename-team-inp-' + teamId);
+  if(!inp) return;
+  const val = inp.value.trim();
+  const team = state.teams.find(t => t.id === teamId);
+  if(team && val) team.name = val;
+  renamingTeamId = null;
+  renderMain();
+};
+window.addStudent = (teamId) => {
+  const inp = document.getElementById('inp-stu-' + teamId);
+  const v = inp ? inp.value.trim() : '';
+  if(!v) return;
+  const team = state.teams.find(t => t.id === teamId);
+  if(team) team.students.push({id: uid(), name: v});
+  saveState(); renderMain();
+};
+window.removeStudent = (teamId, studentId) => {
+  const team = state.teams.find(t => t.id === teamId);
+  if(team) team.students = team.students.filter(s => s.id !== studentId);
+  Object.keys(state.selections).forEach(k => { if(k.endsWith('_' + studentId)) delete state.selections[k]; });
+  saveSelections(); saveState(); renderMain();
+};
+
+// SLOs
+window.addSlo = () => {
+  const inp = document.getElementById('inp-slo');
+  const v = inp ? inp.value.trim() : '';
+  if(!v) return;
+  state.slos.push(v);
+  renderMain();
+};
+window.removeSlo = (i) => {
+  state.slos.splice(i, 1);
+  state.assignments.forEach(a => {
+    a.parts.forEach(p => {
+      if(!p.slos) return;
+      p.slos = p.slos.filter(s => s !== i).map(s => s > i ? s - 1 : s);
+    });
+  });
+  saveState(); renderMain();
+};
+
+// Assignments
+window.addAssignment = () => {
+  const inp = document.getElementById('inp-aname');
+  const v = inp ? inp.value.trim() : '';
+  if(!v) return;
+  state.assignments.push({id: uid(), name: v, collapsed: false, parts: []});
+  renderMain();
+};
+window.removeAssignment = (aid) => {
+  if(!confirm('Delete this assignment and all its parts?')) return;
+  const a = state.assignments.find(a => a.id === aid);
+  if(a) a.parts.forEach(p => {
+    Object.keys(state.selections).forEach(k => { if(k.startsWith(p.id + '_')) delete state.selections[k]; });
+  });
+  state.assignments = state.assignments.filter(a => a.id !== aid);
+  saveSelections(); renderMain();
+};
+window.finishRenameAssignment = (aid) => {
+  const inp = document.getElementById('rename-inp-' + aid);
+  if(!inp) return;
+  const val = inp.value.trim();
+  const a = state.assignments.find(a => a.id === aid);
+  if(a && val) a.name = val;
+  renamingAssignId = null;
+  renderMain();
+};
+window.toggleSetupAssignment = (aid) => {
+  if(setupExpandedAssignments.has(aid)) setupExpandedAssignments.delete(aid);
+  else setupExpandedAssignments.add(aid);
+  renderMain();
+};
+// Name/points/checkboxes in the edit-part form aren't saved until "Save & close",
+// but SLO picks save instantly and re-render the whole form — which would otherwise
+// wipe out those not-yet-saved fields. Capture them first so nothing gets lost.
+function syncEditingPartFields(){
+  if(!editingPartId) return;
+  for(const a of state.assignments){
+    const p = a.parts.find(p => p.id === editingPartId);
+    if(!p) continue;
+    const nameInp = document.getElementById('edit-pname-' + editingPartId);
+    const wtInp   = document.getElementById('edit-pwt-'   + editingPartId);
+    const assessInp = document.getElementById('edit-passessment-' + editingPartId);
+    const reqInp  = document.getElementById('edit-prequired-' + editingPartId);
+    if(nameInp && nameInp.value.trim()) p.name = nameInp.value.trim();
+    if(wtInp && wtInp.value !== '') p.weight = parseInt(wtInp.value) || p.weight;
+    if(assessInp) p.isAssessment = assessInp.checked;
+    if(reqInp) p.requiredAll = reqInp.checked;
+    return;
+  }
+}
+window.togglePartSlo = (aid, pid, si) => {
+  const a = state.assignments.find(a => a.id === aid);
+  const p = a && a.parts.find(p => p.id === pid);
+  if(!p) return;
+  syncEditingPartFields();
+  if(!p.slos) p.slos = [];
+  const idx = p.slos.indexOf(si);
+  if(idx >= 0) p.slos.splice(idx, 1); else p.slos.push(si);
+  saveState(); renderMain();
+};
+window.toggleNewPartSlo = (aid, si) => {
+  if(!newPartSlos[aid]) newPartSlos[aid] = [];
+  const arr = newPartSlos[aid];
+  const idx = arr.indexOf(si);
+  if(idx >= 0) arr.splice(idx, 1); else arr.push(si);
+  renderMain();
+};
+window.syncNewPartDraft = (aid) => {
+  // Mirrors the in-progress "add section" fields into JS state (without re-rendering)
+  // so an unrelated render elsewhere on the page doesn't wipe what's been typed.
+  const nameInp = document.getElementById('inp-pname-' + aid);
+  const wtInp   = document.getElementById('inp-pwt-'   + aid);
+  const assessInp = document.getElementById('inp-passessment-' + aid);
+  const reqInp  = document.getElementById('inp-prequired-' + aid);
+  newPartDrafts[aid] = {
+    name: nameInp ? nameInp.value : '',
+    weight: wtInp ? wtInp.value : 10,
+    isAssessment: !!(assessInp && assessInp.checked),
+    requiredAll: !!(reqInp && reqInp.checked),
+  };
+};
+window.addAssignPart = (aid) => {
+  const nameInp = document.getElementById('inp-pname-' + aid);
+  const wtInp   = document.getElementById('inp-pwt-'   + aid);
+  const assessInp = document.getElementById('inp-passessment-' + aid);
+  const name = nameInp ? nameInp.value.trim() : '';
+  const wt   = parseInt(wtInp ? wtInp.value : '10') || 10;
+  const isAssessment = !!(assessInp && assessInp.checked);
+  const requiredInp = document.getElementById('inp-prequired-' + aid);
+  const requiredAll = !!(requiredInp && requiredInp.checked);
+  if(!name) return;
+  const a = state.assignments.find(a => a.id === aid);
+  const slosForPart = newPartSlos[aid] || [];
+  if(a) a.parts.push({id: uid(), name, weight: wt, isAssessment, requiredAll, slos: slosForPart.slice()});
+  delete newPartSlos[aid];
+  delete newPartDrafts[aid];
+  saveState(); renderMain();
+};
+window.removeAssignPart = (aid, pid) => {
+  const a = state.assignments.find(a => a.id === aid);
+  if(a) a.parts = a.parts.filter(p => p.id !== pid);
+  Object.keys(state.selections).forEach(k => { if(k.startsWith(pid + '_')) delete state.selections[k]; });
+  saveSelections(); renderMain();
+};
+window.savePartEdit = (aid, pid) => {
+  const a = state.assignments.find(a => a.id === aid);
+  const p = a && a.parts.find(p => p.id === pid);
+  if(!p) return;
+  const nameInp = document.getElementById('edit-pname-' + pid);
+  const wtInp   = document.getElementById('edit-pwt-'   + pid);
+  const assessInp = document.getElementById('edit-passessment-' + pid);
+  const reqInp  = document.getElementById('edit-prequired-' + pid);
+  const name = nameInp ? nameInp.value.trim() : p.name;
+  if(!name) return;
+  p.name = name;
+  p.weight = parseInt(wtInp ? wtInp.value : p.weight) || p.weight;
+  p.isAssessment = !!(assessInp && assessInp.checked);
+  p.requiredAll  = !!(reqInp   && reqInp.checked);
+  editingPartId = null;
+  saveState(); renderMain();
+};
+
+window.toggleMatrixTeam = (teamId) => {
+  if(matrixCollapsedTeams.has(teamId)) matrixCollapsedTeams.delete(teamId);
+  else matrixCollapsedTeams.add(teamId);
+  renderMain();
+};
+
+/* ─── SUMMARY BY STUDENT ─── */
+function buildSummary(){
+  const {assignments, selections} = state;
+  const mono = `font-family:'DM Mono',monospace`;
+
+  const assignTotals = assignments.map(a => a.parts.reduce((s,p) => s+p.weight, 0));
+  const grandPossible = assignTotals.reduce((s,v) => s+v, 0);
+
+  function studentAssignData(student, assign){
+    const claimed = assign.parts.filter(p => selections[selKey(p.id, student.id)]);
+    const pts = claimed.reduce((s,p) => s+p.weight, 0);
+    return {pts, parts: claimed};
+  }
+
+  let html = `
+  <div class="page-header">
+    <div class="page-title">Individual Contributions</div>
+    <div class="page-sub">What each student has signed up for and their point contributions per assignment.</div>
+  </div>`;
+
+  const visibleTeams = (currentUser?.type === 'team')
+    ? state.teams.filter(t => t.id === currentUser.teamId)
+    : state.teams;
+  visibleTeams.forEach(team => {
+    html += `<div class="section-title" style="margin-bottom:12px">${team.name}</div>
+    <div class="coverage-table-wrap" style="margin-bottom:28px"><table style="width:auto">
+      <thead><tr>
+        <th style="width:130px;min-width:130px;max-width:130px">Student</th>
+        ${assignments.map((a,ai) => {
+          const isCol = summaryCollapsedAssignments.has(a.id);
+          return `<th style="${isCol ? 'min-width:80px;width:80px;cursor:pointer;text-align:left' : 'min-width:180px;cursor:pointer'}" onclick="if(summaryCollapsedAssignments.has('${a.id}'))summaryCollapsedAssignments.delete('${a.id}');else summaryCollapsedAssignments.add('${a.id}');renderMain()" title="${isCol ? 'Expand' : 'Collapse'}">
+            ${isCol
+              ? `<div style="font-size:11px;color:var(--text2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:120px">&#9654; ${a.name}</div>`
+              : `${a.name} <span style="font-size:9px;opacity:0.4">&#9660;</span><br><span style="font-weight:400;font-size:10px;color:var(--text3)">${assignTotals[ai]} pts available</span>`
+            }
+          </th>`;
+        }).join('')}
+        <th style="min-width:110px;border-left:2px solid var(--border)">Grand total<br><span style="font-weight:400;font-size:10px;color:var(--text3)">${grandPossible} pts possible</span></th>
+      </tr></thead><tbody>`;
+
+    team.students.forEach(student => {
+      const assignData = assignments.map(a => studentAssignData(student, a));
+      const grandTotal = assignData.reduce((s,d) => s+d.pts, 0);
+
+      html += `<tr>
+        <td style="width:130px;min-width:130px;max-width:130px"><strong>${student.name}</strong></td>
+        ${assignData.map((d,ai) => {
+          const a = assignments[ai];
+          const isCol = summaryCollapsedAssignments.has(a.id);
+          const total = assignTotals[ai];
+          const pct = total > 0 ? Math.round((d.pts / total) * 100) : 0;
+          if(isCol) return `<td style="text-align:center;width:80px;padding:6px 4px"><span style="${mono};font-size:11px;color:${d.pts>0?'var(--accent)':'var(--text3)'}">${d.pts>0?d.pts:'—'}</span></td>`;
+          if(d.pts === 0) return `<td><span class="tag-none">&mdash;</span></td>`;
+          return `<td>
+            <div style="${mono};font-weight:700;font-size:13px;color:var(--accent);margin-bottom:3px">
+              ${d.pts} pts
+              <span style="font-weight:400;color:var(--text2);font-size:11px">/ ${total} (${pct}%)</span>
+            </div>
+            <div style="height:4px;background:var(--surface2);border-radius:2px;margin-bottom:5px;overflow:hidden">
+              <div style="height:4px;width:${Math.min(pct,100)}%;background:var(--accent);border-radius:2px"></div>
+            </div>
+            <div style="font-size:11px;color:var(--text2);line-height:1.5">
+              ${d.parts.map(p => `<div>· ${p.name} <span style="${mono};color:var(--text3)">(${p.weight} pts)</span></div>`).join('')}
+            </div>
+          </td>`;
+        }).join('')}
+        <td style="border-left:2px solid var(--border)">
+          ${grandTotal > 0 ? `
+            <div style="font-size:12px;font-weight:600;color:var(--text);margin-bottom:4px">${student.name}</div>
+            <div style="${mono};font-weight:700;font-size:14px;color:var(--accent)">${grandTotal} / ${grandPossible}</div>
+            <div style="height:4px;background:var(--surface2);border-radius:2px;margin:4px 0;overflow:hidden">
+              <div style="height:4px;width:${Math.min(Math.round(grandTotal/grandPossible*100),100)}%;background:var(--accent);border-radius:2px"></div>
+            </div>
+            <div style="${mono};font-size:11px;color:var(--text2)">${Math.round(grandTotal/grandPossible*100)}%</div>
+          ` : '<span class="tag-none">&mdash;</span>'}
+        </td>
+      </tr>`;
+    });
+
+    html += `</tbody></table></div>`;
+  });
+
+  return html;
+}
+
+/* ─── DRAG AND DROP ─── */
+function initDragDrop(){
+  const container = document.getElementById('assignments-dnd');
+  if(!container) return;
+
+  // Rows/blocks only become draggable while the grip handle is held. In dragstart,
+  // e.target is the draggable element itself (never the handle), so the handle can't
+  // be detected there; and a permanently draggable ancestor would also stop the
+  // inputs inside it from being clicked/selected normally.
+  container.querySelectorAll('.drag-handle').forEach(handle => {
+    handle.addEventListener('mousedown', () => {
+      const el = handle.closest('.assign-part-row') || handle.closest('.assign-block');
+      if(el) el.setAttribute('draggable', 'true');
+    });
+  });
+  container.addEventListener('mouseup', () => {
+    container.querySelectorAll('[draggable]').forEach(el => el.removeAttribute('draggable'));
+  });
+
+  // ── Assignment-level drag ──
+  let dragAid = null;
+  container.querySelectorAll('.assign-block').forEach(block => {
+    block.addEventListener('dragstart', e => {
+      if(e.target !== block) return; // a section row inside is being dragged
+      dragAid = block.dataset.aid;
+      setTimeout(() => block.style.opacity = '0.45', 0);
+      e.dataTransfer.effectAllowed = 'move';
+      e.dataTransfer.setData('text/plain', '');
+    });
+    block.addEventListener('dragend', () => {
+      block.style.opacity = '';
+      block.removeAttribute('draggable');
+      dragAid = null;
+      container.querySelectorAll('.assign-block').forEach(b => b.classList.remove('drag-over'));
+    });
+    block.addEventListener('dragover', e => {
+      if(!dragAid) return;
+      // Ignore if hovering over a part row drag
+      if(e.target.closest('.assign-part-row')) return;
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+      container.querySelectorAll('.assign-block').forEach(b => b.classList.remove('drag-over'));
+      if(block.dataset.aid !== dragAid) block.classList.add('drag-over');
+    });
+    block.addEventListener('dragleave', e => {
+      if(!e.relatedTarget || !block.contains(e.relatedTarget)) block.classList.remove('drag-over');
+    });
+    block.addEventListener('drop', e => {
+      e.preventDefault();
+      const targetAid = block.dataset.aid;
+      if(dragAid && dragAid !== targetAid){
+        const arr = state.assignments;
+        const from = arr.findIndex(a => a.id === dragAid);
+        const to   = arr.findIndex(a => a.id === targetAid);
+        if(from >= 0 && to >= 0) arr.splice(to, 0, arr.splice(from, 1)[0]);
+        dragAid = null;
+        renderMain();
+      }
+    });
+  });
+
+  // ── Part-level drag within each assignment ──
+  container.querySelectorAll('.assign-parts-list').forEach(list => {
+    let dragPid = null, dragPAid = null;
+    list.querySelectorAll('.assign-part-row[data-pid]').forEach(row => {
+      row.addEventListener('dragstart', e => {
+        if(e.target !== row) return;
+        dragPid  = row.dataset.pid;
+        dragPAid = row.dataset.aid;
+        // stop propagation so assignment drag doesn't fire
+        e.stopPropagation();
+        setTimeout(() => row.style.opacity = '0.45', 0);
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', '');
+      });
+      row.addEventListener('dragend', () => {
+        row.style.opacity = '';
+        row.removeAttribute('draggable');
+        list.querySelectorAll('.assign-part-row').forEach(r => r.classList.remove('drag-over'));
+        dragPid = dragPAid = null;
+      });
+      row.addEventListener('dragover', e => {
+        if(!dragPid) return;
+        e.preventDefault(); e.stopPropagation();
+        list.querySelectorAll('.assign-part-row').forEach(r => r.classList.remove('drag-over'));
+        if(row.dataset.pid !== dragPid) row.classList.add('drag-over');
+      });
+      row.addEventListener('drop', e => {
+        e.preventDefault(); e.stopPropagation();
+        const targetPid = row.dataset.pid;
+        if(dragPid && dragPAid && dragPid !== targetPid){
+          const a = state.assignments.find(a => a.id === dragPAid);
+          if(a){
+            const from = a.parts.findIndex(p => p.id === dragPid);
+            const to   = a.parts.findIndex(p => p.id === targetPid);
+            if(from >= 0 && to >= 0) a.parts.splice(to, 0, a.parts.splice(from, 1)[0]);
+          }
+          dragPid = dragPAid = null;
+          renderMain();
+        }
+      });
+    });
+  });
+}
+
+(async () => {
+  try {
+    await firebase.auth().signInWithEmailAndPassword('app@capstone.local', 'dashboard2026');
+  } catch(e) { console.warn('Firebase auth failed:', e); }
+  await loadState();
+  await tryAutoLoadStudentData();
+  renderMain();
+  startRealtimeSync();
+})();
+</script>
+
+
+</body></html>
