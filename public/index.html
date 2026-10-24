@@ -5,21 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PORTRAIT Dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
-<script>
-firebase.initializeApp({
-  apiKey: "AIzaSyB-quZxDt2KEYakk0t6kPEvOB_8mnWCsSw",
-  authDomain: "capstone-2026-27-e46ff.firebaseapp.com",
-  projectId: "capstone-2026-27-e46ff",
-  storageBucket: "capstone-2026-27-e46ff.firebasestorage.app",
-  messagingSenderId: "870341533342",
-  appId: "1:870341533342:web:2ec6c085848cc30762e58f"
-});
-const db = firebase.firestore();
-const DOC_REF = db.collection('dashboards').doc('main');
-</script>
 <style>
   :root {
     --bg: #f5f4f0;
@@ -326,50 +311,81 @@ window.toggleSloExpand = (context, si) => {
 let uidCounter = 100;
 function uid(){ return 'u' + (++uidCounter); }
 
+// All shared data lives in Netlify Database, reached through /api/* (see
+// netlify/functions/dashboard.ts). Every write bumps a server-side revision
+// number, which the realtime poller below uses to notice other people's changes.
+let _revision = 0;
+// Incremented on every local write so a poll response that was requested before
+// the write (and so predates it) can be recognised and thrown away.
+let _localSeq = 0;
+let _inflight = 0;
+async function api(method, path, body){
+  _localSeq++;
+  _inflight++;
+  try {
+    const res = await fetch(path, {
+      method,
+      headers: body === undefined ? {} : {'Content-Type': 'application/json'},
+      body: body === undefined ? undefined : JSON.stringify(body),
+    });
+    if(!res.ok) throw new Error(method + ' ' + path + ' → ' + res.status);
+    return await res.json();
+  } finally {
+    _inflight--;
+  }
+}
+
 let _saveTimer;
-// True while this browser has a local change queued that hasn't reached Firestore
-// yet (see saveState below). The realtime listener checks this before merging an
-// incoming snapshot — otherwise a *different*, already-confirmed write (e.g. the
-// selections cleanup that fires immediately when deleting an assignment) could
-// echo back a snapshot that predates this change and silently overwrite it before
-// the debounce timer below gets a chance to send it.
+// True while this browser has a local change queued that hasn't reached the
+// database yet (see saveState below). The realtime poller checks this before
+// merging an incoming snapshot — otherwise a *different*, already-confirmed write
+// (e.g. the selections cleanup that fires immediately when deleting an assignment)
+// could bring back a snapshot that predates this change and silently overwrite it
+// before the debounce timer below gets a chance to send it.
 let _saveDirty = false;
 function saveState(){
   _saveDirty = true;
+  _localSeq++;
   clearTimeout(_saveTimer);
   _saveTimer = setTimeout(() => {
     // `selections` is written separately, per-key (see saveSelectionField/saveSelections),
     // so a browser tab that's been open a while — and hasn't seen other students' picks yet —
     // can never overwrite the whole selections map with its own stale copy.
-    const { selections, ...rest } = state;
-    DOC_REF.set(rest, {merge: true}).then(() => {
+    // `view` is which page THIS browser has open, so it isn't shared either.
+    const { selections, view, ...rest } = state;
+    api('PUT', '/api/state', rest).then(() => {
       _saveDirty = false;
       const ind = document.getElementById('save-indicator');
       if(ind){ ind.textContent = '✓ Saved'; setTimeout(() => { ind.textContent = ''; }, 1500); }
       updateSidebarStats();
-    }).catch(e => { _saveDirty = false; console.warn('Firestore save failed:', e); });
+    }).catch(e => { _saveDirty = false; console.warn('Database save failed:', e); });
   }, 600);
 }
 
 // Atomic write of exactly one selection — safe even if this browser's local
-// `state` is stale, since it only ever touches this one key on the server.
+// `state` is stale, since it only ever touches this one row on the server.
+// Pass null to remove the selection.
 function saveSelectionField(pid, sid, value){
-  DOC_REF.update(new firebase.firestore.FieldPath('selections', selKey(pid, sid)), value)
-    .catch(e => console.warn('Firestore selection save failed:', e));
+  const path = '/api/selections/' + encodeURIComponent(pid) + '/' + encodeURIComponent(sid);
+  (value === null ? api('DELETE', path) : api('PUT', path, value))
+    .catch(e => console.warn('Database selection save failed:', e));
 }
 
 // Full replace of the selections map — only for rare bulk admin actions
 // (clear all, delete a student/team/assignment/part), not per-click student use.
 function saveSelections(){
-  DOC_REF.update({selections: state.selections}).catch(e => console.warn('Firestore selections save failed:', e));
+  api('PUT', '/api/selections', state.selections).catch(e => console.warn('Database selections save failed:', e));
 }
 
 async function loadState(){
   try {
-    const doc = await DOC_REF.get();
-    const saved = doc.exists ? JSON.stringify(doc.data()) : null;
-    if(saved){
-      const parsed = JSON.parse(saved);
+    const res = await fetch('/api/state');
+    if(!res.ok) throw new Error('GET /api/state → ' + res.status);
+    const { revision, state: saved } = await res.json();
+    _revision = revision;
+    // Revision 0 means nothing has ever been saved — keep the built-in defaults.
+    if(revision > 0){
+      const parsed = saved;
       // migrate old format (flat parts with slos) → new assignments format
       if(parsed.parts && !parsed.assignments){
         parsed.assignments = [{
@@ -403,7 +419,7 @@ async function loadState(){
           }
         });
       });
-      if(needsSave) DOC_REF.set(state);
+      if(needsSave) saveState();
       // recalc uidCounter to avoid ID collisions
       const allIds = [
         ...state.teams.flatMap(t => [t.id, ...t.students.map(s => s.id)]),
@@ -420,30 +436,34 @@ async function loadState(){
         });
       }
     }
-  } catch(e) { console.warn('Firestore load failed:', e); }
+  } catch(e) { console.warn('Database load failed:', e); }
 }
 
 // Keeps this browser's local `state` in sync with what everyone else has saved,
 // instead of only ever reading it once at page load. Without this, a tab left
 // open for a while has no way to learn about other students' picks before its
 // own next save — which is what let one save silently blow away another's.
+const SYNC_INTERVAL_MS = 3000;
+async function pollForChanges(){
+  if(document.hidden) return;
+  const seq = _localSeq;
+  const res = await fetch('/api/state?since=' + _revision);
+  if(res.status === 204 || !res.ok) return; // nothing new (or a transient error)
+  const { revision, state: remote } = await res.json();
+  // We have a local change queued or in flight, or made one while this request
+  // was out — applying this snapshot now would overwrite it with server state
+  // that predates that change. Skip it; the next poll picks up the result.
+  if(_saveDirty || _inflight > 0 || seq !== _localSeq) return;
+  _revision = revision;
+  Object.assign(state, remote);
+  const active = document.activeElement;
+  const isTyping = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
+  if(currentUser && !isTyping) renderMain({skipSave: true});
+}
 function startRealtimeSync(){
-  DOC_REF.onSnapshot({includeMetadataChanges: true}, snapshot => {
-    if(snapshot.metadata.hasPendingWrites) return; // our own write echoing back — nothing new
-    if(!snapshot.exists) return;
-    // We have a local change queued that hasn't been written yet (see saveState) —
-    // applying this snapshot now would overwrite it with a server state that
-    // predates that change. Skip it; our own pending save will supersede this
-    // snapshot within ~1s anyway.
-    if(_saveDirty) return;
-    // `view` is which page THIS browser has open, not shared data — never let a
-    // remote update yank another user to whatever tab someone else navigated to.
-    const { view, ...remote } = snapshot.data();
-    Object.assign(state, remote);
-    const active = document.activeElement;
-    const isTyping = active && (active.tagName === 'INPUT' || active.tagName === 'TEXTAREA');
-    if(currentUser && !isTyping) renderMain({skipSave: true});
-  }, e => console.warn('Firestore realtime sync failed:', e));
+  setInterval(() => {
+    pollForChanges().catch(e => console.warn('Database realtime sync failed:', e));
+  }, SYNC_INTERVAL_MS);
 }
 
 window.exportData = () => {
@@ -464,6 +484,7 @@ window.importData = (event) => {
       if(parsed.teams && (parsed.assignments || parsed.parts) && parsed.slos){
         Object.assign(state, parsed);
         saveState();
+        saveSelections();
         renderMain();
       } else { alert('Invalid data file.'); }
     } catch(err) { alert('Could not read file.'); }
@@ -1878,7 +1899,7 @@ window.toggleCell = (pid, sid) => {
   const k = selKey(pid, sid);
   if(state.selections[k]){
     delete state.selections[k];
-    saveSelectionField(pid, sid, firebase.firestore.FieldValue.delete());
+    saveSelectionField(pid, sid, null);
   } else if(part){
     state.selections[k] = {weight: part.weight};
     saveSelectionField(pid, sid, {weight: part.weight});
@@ -2284,9 +2305,6 @@ function initDragDrop(){
 }
 
 (async () => {
-  try {
-    await firebase.auth().signInWithEmailAndPassword('app@capstone.local', 'dashboard2026');
-  } catch(e) { console.warn('Firebase auth failed:', e); }
   await loadState();
   await tryAutoLoadStudentData();
   renderMain();
