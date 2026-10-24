@@ -19,6 +19,7 @@ type Tx = Parameters<Parameters<typeof db.transaction>[0]>[0];
 type DashboardState = {
   teams: { id: string; name: string; students?: { id: string; name: string }[] }[];
   slos: string[];
+  sloDescriptions?: string[];
   assignments: {
     id: string;
     name: string;
@@ -94,6 +95,7 @@ async function loadState() {
         .map((s) => ({ id: s.id, name: s.name })),
     })),
     slos: sloRows.map((s) => s.name),
+    sloDescriptions: sloRows.map((s) => s.description),
     assignments: assignmentRows.map((a) => ({
       id: a.id,
       name: a.name,
@@ -133,7 +135,13 @@ async function saveState(body: DashboardState) {
     await tx.delete(teamPasswords);
 
     if (body.slos.length) {
-      await tx.insert(slos).values(body.slos.map((name, position) => ({ position, name })));
+      await tx.insert(slos).values(
+        body.slos.map((name, position) => ({
+          position,
+          name,
+          description: body.sloDescriptions?.[position] ?? "",
+        })),
+      );
     }
     if (body.teams.length) {
       await tx

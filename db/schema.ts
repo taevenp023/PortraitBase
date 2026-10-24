@@ -12,6 +12,7 @@ import {
 export const slos = pgTable("slos", {
   position: integer().primaryKey(),
   name: text().notNull(),
+  description: text().notNull().default(""),
 });
 
 export const teams = pgTable("teams", {
